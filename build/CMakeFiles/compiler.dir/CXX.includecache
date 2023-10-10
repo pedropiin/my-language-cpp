@@ -6,7 +6,15 @@
 
 #IncludeRegexTransform: 
 
-/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/main.cpp
+/mnt/c/Users/Pedro/desktop/all/dev/projects/asm-compiler/src/main.cpp
 iostream
+-
+fstream
+-
+sstream
+-
+optional
+-
+vector
 -
 
