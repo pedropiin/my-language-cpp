@@ -16,6 +16,10 @@ struct Token {
     std::optional<std::string> valor;
 };
 
+
+/*Função que realiza a análise lexical/tokenização lexical
+passando por todo o conteúdo do arquivo .ml (tido como uma string)
+e reconhecendo palavras chaves.*/
 std::vector<Token> tokenization(std::string str) {
     std::vector<Token> tokens;
     std::string buffer;
@@ -45,8 +49,8 @@ std::vector<Token> tokenization(std::string str) {
                 i++;
             }
             i--;
-            if (buffer.compare("69") == 0) {
-                tokens.push_back({.tipo = TipoToken::int_lit, .value = buffer});
+            if (buffer.compare("5") == 0) {
+                tokens.push_back({.tipo = TipoToken::int_lit, .valor = buffer});
                 buffer.clear();
                 continue;
             } else {
@@ -54,7 +58,7 @@ std::vector<Token> tokenization(std::string str) {
                 exit(EXIT_FAILURE);
             }
         } else if (str[i] == ';') {
-            token.push_back({.tipo = TipoToken::semicolon});
+            tokens.push_back({.tipo = TipoToken::semicolon});
             continue;
         } else if (std::isspace(str[i])) {
             continue;
@@ -67,6 +71,30 @@ std::vector<Token> tokenization(std::string str) {
     return tokens;
 }
 
+/*Função que converte os tokens obtidos pela
+tokenização no respectivo código em assembly*/
+std::string tokens_to_asm(std::vector<Token> tokens_file) {
+    std::stringstream out;
+    out << "global _start\n_start:\n";
+    for (int i = 0; i < tokens_file.size(); i++) {
+        Token token = tokens_file[i];
+        switch (tokens_file[i].tipo) {
+            case TipoToken::_return:
+                if ((i + 1) < tokens_file.size() && tokens_file[i + 1].tipo == TipoToken::int_lit) {
+                    if ((i + 2) < tokens_file.size() && tokens_file[i + 2].tipo == TipoToken::semicolon) {
+                        out << "    mov rax, 60\n    mov rdi, " << tokens_file[i + 1].valor.value() << '\n' << "    syscall\n";
+                    }
+                }
+                break;
+            case TipoToken::int_lit:
+                break;
+            case TipoToken::semicolon:
+                break;
+        }
+    }
+    return out.str();
+}
+
 int main(int argc, char* argv[]) {
     //garantindo que o programa tenha apenas dois argumentos: argv[0] = path do arquivo em C e argv[1] = path do arquivo .ml
     if (argc != 2) {
@@ -75,13 +103,24 @@ int main(int argc, char* argv[]) {
     }
 
     //preparando para ler conteúdos do arquivo .ml como string
-    std::fstream fs (argv[1], std::ios::in);
+    std::fstream fs_in (argv[1], std::ios::in);
     std::stringstream conteudo_stream;
-    conteudo_stream << fs.rdbuf();
-    fs.close();
+    conteudo_stream << fs_in.rdbuf();
+    fs_in.close();
     std::string conteudo_arquivo = conteudo_stream.str();
 
-    std::vector<Token> teste = tokenization(conteudo_arquivo);
+    //realizando tokenização no arquivo e convertendo em assembly
+    std::vector<Token> tokens = tokenization(conteudo_arquivo);
+    std::string conteudo_asm = tokens_to_asm(tokens);
+
+    //criando e escrevendo em um arquivo nosso código em assembly
+    std::fstream fs_out ("./out.asm", std::ios::out);
+    fs_out << conteudo_asm;
+    fs_out.close();
+
+    system("nasm -felf64 ./out.asm");
+    system("ld -o out out.o");
+    
 
     return EXIT_SUCCESS;
 }
