@@ -4,22 +4,16 @@
 #include <optional>
 #include <vector>
 
-
-enum class TipoToken {
-    _return,
-    int_lit,
-    semicolon
-};
-
-struct Token {
-    TipoToken tipo;
-    std::optional<std::string> valor;
-};
-
+#include "./tokenization.hpp"
 
 /*Função que realiza a análise lexical/tokenização lexical
 passando por todo o conteúdo do arquivo .ml (tido como uma string)
-e reconhecendo palavras chaves.*/
+e reconhecendo palavras chaves.
+PARÂMETROS:
+- str (std::string): string com todo o conteúdo do arquivo .ml a ser compilado
+RETURNS:
+- tokens (std::vector<Token): vetor de tokens do arquivo .ml
+*/
 std::vector<Token> tokenization(std::string str) {
     std::vector<Token> tokens;
     std::string buffer;
@@ -33,12 +27,12 @@ std::vector<Token> tokenization(std::string str) {
                 i++;
             }
             i--;
-            if (buffer.compare("return") == 0) {
-                tokens.push_back({.tipo = TipoToken::_return});
+            if (buffer.compare("exit") == 0) {
+                tokens.push_back({.tipo = TipoToken::_exit});
                 buffer.clear();
                 continue;
             } else {
-                std::cerr << "Erro na tokenização do return do arquivo .ml" << std::endl;
+                std::cerr << "Erro na tokenização da saída do arquivo .ml" << std::endl;
                 exit(EXIT_FAILURE);
             }
         } else if (std::isdigit(str[i])) {
@@ -72,14 +66,21 @@ std::vector<Token> tokenization(std::string str) {
 }
 
 /*Função que converte os tokens obtidos pela
-tokenização no respectivo código em assembly*/
+tokenização no respectivo código em assembly;
+PARÂMETROS:
+- tokens_file (std::vector<Token>): vetor de tokens lexicais
+do arquivo .ml
+RETURNS:
+- out (std::string): formato em string de uma stringstream
+que contêm o código em asm correspondente ao código em ml
+*/
 std::string tokens_to_asm(std::vector<Token> tokens_file) {
     std::stringstream out;
     out << "global _start\n_start:\n";
     for (int i = 0; i < tokens_file.size(); i++) {
         Token token = tokens_file[i];
         switch (tokens_file[i].tipo) {
-            case TipoToken::_return:
+            case TipoToken::_exit:
                 if ((i + 1) < tokens_file.size() && tokens_file[i + 1].tipo == TipoToken::int_lit) {
                     if ((i + 2) < tokens_file.size() && tokens_file[i + 2].tipo == TipoToken::semicolon) {
                         out << "    mov rax, 60\n    mov rdi, " << tokens_file[i + 1].valor.value() << '\n' << "    syscall\n";

@@ -1,1 +1,1 @@
-return 5;
+exit 5;
