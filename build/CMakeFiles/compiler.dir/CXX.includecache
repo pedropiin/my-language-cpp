@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/mnt/c/Users/Pedro/desktop/all/dev/projects/asm-compiler/src/main.cpp
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/main.cpp
 iostream
 -
 fstream
@@ -16,5 +16,15 @@ sstream
 optional
 -
 vector
+-
+./tokenization.hpp
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/tokenization.hpp
+
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/tokenization.hpp
+optional
+-
+vector
+-
+string
 -
 
