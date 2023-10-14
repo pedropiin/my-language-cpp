@@ -22,10 +22,16 @@ class Parser {
         {}
 
         /*
-        
+        Método responsável por checar existência de expressão
+        após o encontro de um nó atrelado à "_exit"
+        PARÂMETROS:
+        RETURNS:
+        - no (std::optional<node::Expr): caso haja expressão, 
+        retorna um nó relacionado ao token da expressão. Caso
+        contrário, retorna NULL.
         */
         inline std::optional<node::Expr> parse_expr() {
-            if (peak().has_value() && peak().value().tipo == TipoToken::int_lit) {
+            if (peek().has_value() && peek().value().tipo == TipoToken::int_lit) {
                 node::Expr no = {.token = consume()};
                 return no;
             } else {
@@ -34,13 +40,19 @@ class Parser {
         }
 
         /*
-        
+        Método responsável por parsear todo o vetor de tokens
+        do arquivo fonte, procurando por erros de sintaxe
+        e nós para cada uma das entidades necessárias
+        PARÂMETROS:
+        RETURNS:
+        - exit_node (std::optional<node::Exit>): nó atrelado
+        à expressão de saída do código.
         */
         inline std::optional<node::Exit> parse() {
             std::optional<node::Exit> exit_node;
 
-            while (peak().has_value()) {
-                if (peak().value().tipo == TipoToken::_exit) {
+            while (peek().has_value()) {
+                if (peek().value().tipo == TipoToken::_exit) {
                     consume();
                     std::optional<node::Expr> expr_node = parse_expr();
                     if (expr_node.has_value()) {
@@ -49,7 +61,7 @@ class Parser {
                         std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão do tipo 'int'" << std::endl;
                         exit(EXIT_FAILURE);
                     }
-                    if (peak().has_value() && peak().value().tipo == TipoToken::ponto_virgula) {
+                    if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
                         consume();
                     } else {
                         std::cerr << "Erro de sintaxe. Por favor coloque um ';' no final da linha." << std::endl;
@@ -78,7 +90,7 @@ class Parser {
         - m_tokens[m_index] (std::optional<Token>): token no 
         índice de análise do vetor
         */
-        inline std::optional<Token> peak(int num_tokens = 1) const {
+        inline std::optional<Token> peek(int num_tokens = 1) const {
             if (m_index + num_tokens > m_tokens.size()) {
                 return {};
             } else {

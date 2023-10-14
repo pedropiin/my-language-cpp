@@ -34,10 +34,10 @@ class Tokenizador {
             std::vector<Token> tokens;
             std::string buffer;
 
-            while (peak().has_value()) {
-                if (std::isalpha(peak().value())) { //estamos garantindo que peak() vai retornar um caracter
+            while (peek().has_value()) {
+                if (std::isalpha(peek().value())) { //estamos garantindo que peek() vai retornar um caracter
                     buffer.push_back(consume());
-                    while (peak().has_value() && std::isalnum(peak().value())) {
+                    while (peek().has_value() && std::isalnum(peek().value())) {
                         buffer.push_back(consume());
                     }
                     if (buffer.compare("exit") == 0) {
@@ -48,19 +48,19 @@ class Tokenizador {
                         std::cerr << "Erro com a tokenização da chamada de saída." << std::endl;
                         exit(EXIT_FAILURE);
                     }
-                } else if (std::isdigit(peak().value())) {
+                } else if (std::isdigit(peek().value())) {
                     buffer.push_back(consume());
-                    while (peak().has_value() && std::isalnum(peak().value())) {
+                    while (peek().has_value() && std::isalnum(peek().value())) {
                         buffer.push_back(consume());
                     }
                     tokens.push_back({.tipo = TipoToken::int_lit, .valor = buffer});
                     buffer.clear();
                     continue;
-                } else if (peak().value() == ';') {
+                } else if (peek().value() == ';') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::ponto_virgula});
                     continue;
-                } else if (std::isspace(peak().value())) {
+                } else if (std::isspace(peek().value())) {
                     consume();
                     continue;
                 } else {
@@ -88,7 +88,7 @@ class Tokenizador {
         - m_src[m_index] (std::optional<char>): caracter no 
         índice de análise.
         */
-        inline std::optional<char> peak(int num_chars = 1) const {
+        inline std::optional<char> peek(int num_chars = 1) const {
             if (m_index + num_chars > m_src.length()) {
                 return {};
             } else {
