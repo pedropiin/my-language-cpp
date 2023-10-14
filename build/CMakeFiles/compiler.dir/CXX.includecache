@@ -6,6 +6,16 @@
 
 #IncludeRegexTransform: 
 
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/gerador.hpp
+vector
+-
+string
+-
+sstream
+-
+parser.hpp
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/parser.hpp
+
 /mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/main.cpp
 iostream
 -
@@ -15,6 +25,16 @@ sstream
 -
 optional
 -
+vector
+-
+./tokenization.hpp
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/tokenization.hpp
+./parser.hpp
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/parser.hpp
+gerador.hpp
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/gerador.hpp
+
+/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/parser.hpp
 vector
 -
 ./tokenization.hpp

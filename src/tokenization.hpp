@@ -17,7 +17,9 @@ struct Token {
 
 class Tokenizador {
     public:
-        inline Tokenizador (const std::string src) : m_src(src) {}
+        inline Tokenizador(const std::string src) 
+            : m_src(src) 
+        {}
 
         /*
         Função que realiza a análise lexical/tokenização lexical
@@ -72,9 +74,11 @@ class Tokenizador {
 
 
     private:
+        const std::string m_src;
+        int m_index = 0;
 
         /*
-        Método que olha o próximo indíce da string para
+        Método que "olha" o próximo indíce da string para
         ver se chegou ao seu fim, ou se é um caracter válido
         PARÂMETROS:
         - num_chars (int): número de caracteres que a função 
@@ -84,7 +88,7 @@ class Tokenizador {
         - m_src[m_index] (std::optional<char>): caracter no 
         índice de análise.
         */
-        std::optional<char> peak(int num_chars = 1) const {
+        inline std::optional<char> peak(int num_chars = 1) const {
             if (m_index + num_chars > m_src.length()) {
                 return {};
             } else {
@@ -99,12 +103,9 @@ class Tokenizador {
         RETURNS:
         - c (char): caracter no índice atual.
         */
-        char consume() {
+        inline char consume() {
             char c = m_src[m_index];
             m_index++;
             return c;
         }
-
-        const std::string m_src;
-        int m_index = 0;
 };
