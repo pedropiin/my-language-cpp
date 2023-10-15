@@ -20,25 +20,29 @@ namespace node {
     };
 
     struct Expr {
-        std::variant<node::ExprIntLit, node::ExprIdentif> variant_expr ;
+        std::variant<node::ExprIntLit, node::ExprIdentif> variant_expr;
     };
 
-    struct DeclarExit {
+    struct StatmtExit {
         node::Expr expr;
     };
 
-    struct DeclarVar {
+    struct StatmtVar {
         Token token_identif;
         node::Expr expr;
     };
 
-    struct Declar {
-        std::variant<node::DeclarVar, node::DeclarExit> variant_declar;
+    struct Statmt {
+        std::variant<node::StatmtVar, node::StatmtExit> variant_statmt;
     };
 
-    struct Programa {
-        std::vector<node::Declar> declars;
+    struct Program {
+        std::vector<node::Statmt> statmts;
     };
+};
+
+struct NoExprIntLit {
+    Token token;
 };
 
 class Parser {
@@ -57,9 +61,15 @@ class Parser {
         contrário, retorna NULL.
         */
         inline std::optional<node::Expr> parse_expr() {
-            if (peek().has_value() && peek().value().tipo == TipoToken::int_lit) {
-                node::Expr no = {.token = consume()};
-                return no;
+            if (peek().has_value()) {
+                if (peek().value().tipo == TipoToken::int_lit) {
+                    return node::Expr {.variant_expr = node::ExprIntLit {.token_int = consume()}}; //optaria por criar variavel antes, mas assim nem preciso alocar memória
+                } else if (peek().value().tipo == TipoToken::identif) {
+                    return node::Expr {.variant_expr = node::ExprIdentif {.token_identif = consume()}};
+                } else {
+                    std::cerr << "Uma expressão pode ser apenas 'int_lit' ou um identificador." << std::endl;
+                    exit(EXIT_FAILURE);
+                }
             } else {
                 return {};
             }
@@ -74,41 +84,86 @@ class Parser {
         - exit_node (std::optional<node::Exit>): nó atrelado
         à expressão de saída do código.
         */
-        inline std::optional<node::Exit> parse() {
-            std::optional<node::Exit> exit_node;
-            while (peek().has_value()) {
-                if (peek().value().tipo == TipoToken::_exit) { 
+        inline std::optional<node::Statmt> parse_statmt() {
+            if (peek().has_value() && peek().value().tipo == TipoToken::_exit) {
+                consume();
+                node::StatmtExit statmt_exit;
+                if (peek().has_value() && peek().value().tipo == TipoToken::parenteses_abre) {
                     consume();
-                    if (peek().value().tipo == TipoToken::parenteses_abre) {
+                    if (auto node_expr = parse_expr()) {
+                        statmt_exit = {.expr = node_expr.value()};
                         consume();
-                        std::optional<node::Expr> expr_node = parse_expr();
-                        if (expr_node.has_value()) {
-                            if (peek().value().tipo == TipoToken::parenteses_fecha) {
-                                exit_node = node::Exit{.expr = expr_node.value()};
-                                consume();
-                            } else {
-                                std::cerr << "Expressão inválida. Esperava-se ')' ao final da função" << std::endl;
-                                exit(EXIT_FAILURE);
-                            }
+                    } else {
+                        std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão 'int_lit' ou um identificador." << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                    if (peek().has_value() && peek().value().tipo == TipoToken::parenteses_fecha) {
+                        consume();
+                    } else {
+                        std::cerr << "Erro de sintaxe. Esperava-se ')' ao final da função" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                    if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
+                        consume();
+                    } else {
+                        std::cerr << "Erro de sintaxe. Esperava-se ';' no final da linha." << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                } else {
+                    std::cerr << "Erro de sintaxe. A função deve conter '('." << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                return node::Statmt {.variant_statmt = statmt_exit};
+
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::var) {
+                consume();
+                node::StatmtVar statmt_var;
+                if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
+                    statmt_var = node::StatmtVar {.token_identif = consume()};
+                    if (peek().has_value() && peek().value().tipo == TipoToken::igual) {
+                        consume();
+                        if (auto node_expr = parse_expr()) {
+                            statmt_var = {.expr = node_expr.value()};
+                            consume();
                         } else {
-                            std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão do tipo 'int'" << std::endl;
+                            std::cerr << "Expressão inválida." << std::endl;
                             exit(EXIT_FAILURE);
                         }
                         if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
                             consume();
                         } else {
-                            std::cerr << "Erro de sintaxe. Por favor coloque um ';' no final da linha." << std::endl;
+                            std::cerr << "Erro de sintaxe. Esperava-se ';' no final da linha." << std::endl;
                             exit(EXIT_FAILURE);
                         }
                     } else {
-                        std::cerr << "Erro de sintaxe. A função deve conter '('." << std::endl;
+                        std::cerr << "Erro de sintaxe. Esperava-se '=' após declaração de variável." << std::endl;
                         exit(EXIT_FAILURE);
                     }
+                } else {
+                    std::cerr << "Declaração inválida. Uma variável precisa de um identificador.";
+                    exit(EXIT_FAILURE);
+                }
+                return node::Statmt {.variant_statmt = statmt_var};
+            } else {
+                return {};
+            }
+        }
+
+        /*
+        
+        */
+        inline std::optional<node::Program> parse_program() {
+            node::Program program;
+            while(peek().has_value()) {
+                if (auto node_statmt = parse_statmt()) {
+                    program.statmts.push_back(node_statmt.value());
+                } else {
+                    std::cerr << "Declaração inválida." << std::endl;
+                    exit(EXIT_FAILURE);
                 }
             }
-            m_index = 0;
-            return exit_node;
         }
+
 
 
     private:

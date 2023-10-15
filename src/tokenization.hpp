@@ -9,7 +9,10 @@ enum class TipoToken {
     int_lit,
     ponto_virgula,
     parenteses_abre,
-    parenteses_fecha
+    parenteses_fecha,
+    identif,
+    var,
+    igual
 };
 
 struct Token {
@@ -17,9 +20,9 @@ struct Token {
     std::optional<std::string> valor;
 };
 
-class Tokenizador {
+class Tokenizer {
     public:
-        inline Tokenizador(const std::string src) 
+        inline Tokenizer(const std::string src) 
             : m_src(src) 
         {}
 
@@ -32,7 +35,7 @@ class Tokenizador {
         RETURNS:
         - tokens (std::vector<Token): vetor de tokens do arquivo .ml
         */
-        inline std::vector<Token> tokenizar() {
+        inline std::vector<Token> tokenize() {
             std::vector<Token> tokens;
             std::string buffer;
 
@@ -46,9 +49,14 @@ class Tokenizador {
                         tokens.push_back({.tipo = TipoToken::_exit});
                         buffer.clear();
                         continue;
+                    } else if (buffer.compare("var") == 0) {
+                        tokens.push_back({.tipo = TipoToken::var});
+                        buffer.clear();
+                        continue;
                     } else {
-                        std::cerr << "Erro com a tokenização da chamada de saída." << std::endl;
-                        exit(EXIT_FAILURE);
+                        tokens.push_back({.tipo = TipoToken::identif, .valor = buffer});
+                        buffer.clear();
+                        continue;
                     }
                 } else if (std::isdigit(peek().value())) {
                     buffer.push_back(consume());
@@ -57,6 +65,10 @@ class Tokenizador {
                     }
                     tokens.push_back({.tipo = TipoToken::int_lit, .valor = buffer});
                     buffer.clear();
+                    continue;
+                } else if (peek().value() == '=') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::igual});
                     continue;
                 } else if (peek().value() == '(') {
                     consume();

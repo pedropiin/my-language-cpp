@@ -37,6 +37,8 @@ gerador.hpp
 /mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/parser.hpp
 vector
 -
+variant
+-
 ./tokenization.hpp
 /mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/tokenization.hpp
 

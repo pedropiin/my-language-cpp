@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
     std::string conteudo_arquivo = conteudo_stream.str();
 
     //realizando tokenização no arquivo e convertendo em assembly
-    Tokenizador tokenizador(std::move(conteudo_arquivo));
-    std::vector<Token> tokens = tokenizador.tokenizar();
+    Tokenizer tokenizer(std::move(conteudo_arquivo));
+    std::vector<Token> tokens = tokenizer.tokenize();
     Parser parser(std::move(tokens));
     std::optional<node::Exit> arvore = parser.parse();
     if (!arvore.has_value()) {

@@ -8,8 +8,8 @@
 
 class Gerador {
     public:
-        inline Gerador(node::Exit raiz) 
-            : m_raiz(std::move(raiz))
+        inline Gerador(node::Program program) 
+            : m_program(std::move(program))
         {}
 
         /*Função que converte os tokens obtidos pela tokenização
@@ -24,11 +24,11 @@ class Gerador {
         inline std::string gerar_asm() const {
             std::stringstream out;
             out << "global _start\n_start:\n";
-            out << "    mov rax, 60\n    mov rdi, " << m_raiz.expr.token.valor.value() << '\n' << "    syscall\n";
+            out << "    mov rax, 60\n    mov rdi, " << m_program.expr.token.valor.value() << '\n' << "    syscall\n";
             return out.str();
         }
 
 
     private:
-        const node::Exit m_raiz;
+        const node::Program m_program;
 };
