@@ -1,16 +1,29 @@
 #pragma once
 
 #include <vector>
+#include <variant>
 
 #include "./tokenization.hpp"
 
-
+/*
+Namespace que contêm todos os nós necessários para a 
+implementação da árvore de parsing. Cada nó representa
+uma expressão sintática da linguagem (.ml)
+*/
 namespace node {
-    struct Expr {
-        Token token;
+    struct ExprIntLit {
+        Token token_int;
     };
 
-    struct Exit {
+    struct ExprIdentif {
+        Token token_identif;
+    };
+
+    struct Expr {
+        std::variant<node::ExprIntLit, node::ExprIdentif> variant;
+    }
+
+    struct Program {
         node::Expr expr;
     };
 };
@@ -50,21 +63,32 @@ class Parser {
         */
         inline std::optional<node::Exit> parse() {
             std::optional<node::Exit> exit_node;
-
             while (peek().has_value()) {
-                if (peek().value().tipo == TipoToken::_exit) {
+                if (peek().value().tipo == TipoToken::_exit) { 
                     consume();
-                    std::optional<node::Expr> expr_node = parse_expr();
-                    if (expr_node.has_value()) {
-                        exit_node = node::Exit {.expr = expr_node.value()};
-                    } else {
-                        std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão do tipo 'int'" << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-                    if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
+                    if (peek().value().tipo == TipoToken::parenteses_abre) {
                         consume();
+                        std::optional<node::Expr> expr_node = parse_expr();
+                        if (expr_node.has_value()) {
+                            if (peek().value().tipo == TipoToken::parenteses_fecha) {
+                                exit_node = node::Exit{.expr = expr_node.value()};
+                                consume();
+                            } else {
+                                std::cerr << "Expressão inválida. Esperava-se ')' ao final da função" << std::endl;
+                                exit(EXIT_FAILURE);
+                            }
+                        } else {
+                            std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão do tipo 'int'" << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
+                        if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
+                            consume();
+                        } else {
+                            std::cerr << "Erro de sintaxe. Por favor coloque um ';' no final da linha." << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
                     } else {
-                        std::cerr << "Erro de sintaxe. Por favor coloque um ';' no final da linha." << std::endl;
+                        std::cerr << "Erro de sintaxe. A função deve conter '('." << std::endl;
                         exit(EXIT_FAILURE);
                     }
                 }
@@ -83,18 +107,18 @@ class Parser {
         para ver se chegou ao seu fim, ou se é um token
         válido.
         PARÂMETROS:
-        - num_tokens (int): número de tokens que o usuário 
+        - offset (int): número de tokens que o usuário 
         deseja analisar a frente do índice atual. Por padrão
-        é settado como = 1.
+        é settado como = 0.
         RETURNS:
         - m_tokens[m_index] (std::optional<Token>): token no 
         índice de análise do vetor
         */
-        inline std::optional<Token> peek(int num_tokens = 1) const {
-            if (m_index + num_tokens > m_tokens.size()) {
+        inline std::optional<Token> peek(int offset = 0) const {
+            if (m_index + offset >= m_tokens.size()) {
                 return {};
             } else {
-                return m_tokens[m_index];
+                return m_tokens[m_index + offset];
             }
         }
 

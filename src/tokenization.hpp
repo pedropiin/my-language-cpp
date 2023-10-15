@@ -7,7 +7,9 @@
 enum class TipoToken {
     _exit,
     int_lit,
-    ponto_virgula
+    ponto_virgula,
+    parenteses_abre,
+    parenteses_fecha
 };
 
 struct Token {
@@ -56,6 +58,13 @@ class Tokenizador {
                     tokens.push_back({.tipo = TipoToken::int_lit, .valor = buffer});
                     buffer.clear();
                     continue;
+                } else if (peek().value() == '(') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::parenteses_abre});
+                    continue;
+                } else if (peek().value() == ')') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::parenteses_fecha});
                 } else if (peek().value() == ';') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::ponto_virgula});
@@ -81,18 +90,18 @@ class Tokenizador {
         Método que "olha" o próximo indíce da string para
         ver se chegou ao seu fim, ou se é um caracter válido
         PARÂMETROS:
-        - num_chars (int): número de caracteres que a função 
+        - offset (int): número de caracteres que a função 
         vai analisar a frente do índice atual. Por padrão é
-        settado como = 1.
+        settado como = 0.
         RETURNS:
         - m_src[m_index] (std::optional<char>): caracter no 
         índice de análise.
         */
-        inline std::optional<char> peek(int num_chars = 1) const {
-            if (m_index + num_chars > m_src.length()) {
+        inline std::optional<char> peek(int offset = 0) const {
+            if (m_index + offset >= m_src.length()) {
                 return {};
             } else {
-                return m_src[m_index];
+                return m_src[m_index + offset];
             }
         }
 
