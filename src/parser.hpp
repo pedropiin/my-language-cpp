@@ -20,11 +20,24 @@ namespace node {
     };
 
     struct Expr {
-        std::variant<node::ExprIntLit, node::ExprIdentif> variant;
-    }
+        std::variant<node::ExprIntLit, node::ExprIdentif> variant_expr ;
+    };
 
-    struct Program {
+    struct DeclarExit {
         node::Expr expr;
+    };
+
+    struct DeclarVar {
+        Token token_identif;
+        node::Expr expr;
+    };
+
+    struct Declar {
+        std::variant<node::DeclarVar, node::DeclarExit> variant_declar;
+    };
+
+    struct Programa {
+        std::vector<node::Declar> declars;
     };
 };
 
