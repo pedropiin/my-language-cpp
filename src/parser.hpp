@@ -92,7 +92,6 @@ class Parser {
                     consume();
                     if (auto node_expr = parse_expr()) {
                         statmt_exit = {.expr = node_expr.value()};
-                        consume();
                     } else {
                         std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão 'int_lit' ou um identificador." << std::endl;
                         exit(EXIT_FAILURE);
@@ -100,7 +99,7 @@ class Parser {
                     if (peek().has_value() && peek().value().tipo == TipoToken::parenteses_fecha) {
                         consume();
                     } else {
-                        std::cerr << "Erro de sintaxe. Esperava-se ')' ao final da função" << std::endl;
+                        std::cerr << "Erro de sintaxe. Esperava-se ')' ao final da função." << std::endl;
                         exit(EXIT_FAILURE);
                     }
                     if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
@@ -162,6 +161,7 @@ class Parser {
                     exit(EXIT_FAILURE);
                 }
             }
+            return program;
         }
 
 

@@ -6,7 +6,7 @@
 
 #include "./tokenization.hpp"
 #include "./parser.hpp"
-#include "gerador.hpp"
+#include "./gerador.hpp"
 
 
 int main(int argc, char* argv[]) {
@@ -27,14 +27,13 @@ int main(int argc, char* argv[]) {
     Tokenizer tokenizer(std::move(conteudo_arquivo));
     std::vector<Token> tokens = tokenizer.tokenize();
     Parser parser(std::move(tokens));
-    std::optional<node::Exit> arvore = parser.parse();
-    if (!arvore.has_value()) {
+    std::optional<node::Program> program = parser.parse_program();
+    if (!program.has_value()) {
         std::cerr << "Nenhuma operação de saída." << std::endl;
         exit(EXIT_FAILURE);
     }
-    Gerador gerador(arvore.value());
-    std::string conteudo_asm = gerador.gerar_asm();
-
+    Generator generator(program.value());
+    std::string conteudo_asm = generator.generate_program();
 
     //criando e escrevendo em um arquivo nosso código em assembly
     std::fstream fs_out ("./out.asm", std::ios::out);
