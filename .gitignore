@@ -1,2 +1,4 @@
-build
-out
+build/
+out.asm
+out.out
+.out
