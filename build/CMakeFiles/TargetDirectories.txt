@@ -1,3 +1,0 @@
-/mnt/c/Users/Pedro/desktop/all/dev/projects/asm-compiler/build/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/Pedro/desktop/all/dev/projects/asm-compiler/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Pedro/desktop/all/dev/projects/asm-compiler/build/CMakeFiles/compiler.dir
