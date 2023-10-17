@@ -56,38 +56,21 @@ class Generator {
                     generator->m_out << "    syscall\n";
                 }
                 void operator()(const node::StatmtVar& statmt_var) {
-                    // if (!generator->m_variables.contains(statmt_var.token_identif.valor.value())) {
-                    //     std::cout << "problema aqui" << std::endl;
-                    //     Variable new_var = {.stack_pos = generator->m_stack_size};
-                    //     std::cout << "problema aqui 2" << std::endl;
-                    //     generator->m_variables.insert({statmt_var.token_identif.valor.value(), new_var}); // apenas guardo posição da variável/valor na stack
-                    //     std::cout << "problema aqui 3" << std::endl;
-                    //     generator->generate_expr(statmt_var.expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
-                    //     std::cout << "problema aqui 5" << std::endl;
-                    // } else {
-                    //     std::cerr << "Identificador '" << statmt_var.token_identif.valor.value() << "' já utilizado." << std::endl;
-                    //     exit(EXIT_FAILURE);
-                    // }
-                    if (generator->m_variables.contains(statmt_var.token_identif.valor.value()))
-                    {
-                        std::cerr << "Identificador '" << statmt_var.token_identif.valor.value() << "' já utilizado." << std::endl;
-                        exit(EXIT_FAILURE);
+                    if (statmt_var.token_identif.valor.has_value()) {
+                        if (!generator->m_variables.contains(statmt_var.token_identif.valor.value())) {
+                            Variable new_var = {.stack_pos = generator->m_stack_size};
+                            generator->m_variables.insert({statmt_var.token_identif.valor.value(), new_var}); // apenas guardo posição da variável/valor na stack
+                            generator->generate_expr(statmt_var.expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
+                        } else {
+                            std::cerr << "Identificador '" << statmt_var.token_identif.valor.value() << "' já utilizado." << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
                     }
-                    std::cout << "problema aqui" << std::endl;
-                    Variable new_var = {.stack_pos = generator->m_stack_size};
-                    std::cout << "problema aqui 2" << std::endl;
-                    generator->m_variables.insert({statmt_var.token_identif.valor.value(), new_var}); // apenas guardo posição da variável/valor na stack
-                    std::cout << "problema aqui 3" << std::endl;
-                    generator->generate_expr(statmt_var.expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
-                    std::cout << "problema aqui 5" << std::endl;
                 }
             };
 
-            std::cout << "problema aqui 8" << std::endl;
             StatmtVisitor visitor {.generator = this};
-            std::cout << "problema aqui 9" << std::endl;
             std::visit(visitor, statmt.variant_statmt);
-            std::cout << "problema aqui 10" << std::endl;
         }
 
 

@@ -122,7 +122,7 @@ class Parser {
                     if (peek().has_value() && peek().value().tipo == TipoToken::igual) {
                         consume();
                         if (auto node_expr = parse_expr()) {
-                            statmt_var = {.expr = node_expr.value()};
+                            statmt_var.expr = node_expr.value();
                         } else {
                             std::cerr << "Expressão inválida." << std::endl;
                             exit(EXIT_FAILURE);
