@@ -123,7 +123,6 @@ class Parser {
                         consume();
                         if (auto node_expr = parse_expr()) {
                             statmt_var = {.expr = node_expr.value()};
-                            consume();
                         } else {
                             std::cerr << "Expressão inválida." << std::endl;
                             exit(EXIT_FAILURE);
@@ -139,7 +138,7 @@ class Parser {
                         exit(EXIT_FAILURE);
                     }
                 } else {
-                    std::cerr << "Declaração inválida. Uma variável precisa de um identificador.";
+                    std::cerr << "Declaração inválida. Uma variável precisa de um identificador." << std::endl;
                     exit(EXIT_FAILURE);
                 }
                 return node::Statmt {.variant_statmt = statmt_var};

@@ -13,6 +13,8 @@ string
 -
 sstream
 -
+unordered_map
+-
 parser.hpp
 /mnt/c/Users/Pedro/desktop/all/dev/projects/asm-compiler/src/parser.hpp
 

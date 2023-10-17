@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     }
     Generator generator(program.value());
     std::string conteudo_asm = generator.generate_program();
-
+    
     //criando e escrevendo em um arquivo nosso código em assembly
     std::fstream fs_out ("./out.asm", std::ios::out);
     fs_out << conteudo_asm;
