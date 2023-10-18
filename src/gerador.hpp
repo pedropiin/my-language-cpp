@@ -31,7 +31,16 @@ class Generator {
                     if (generator->m_variables.contains(expr_identif.token_identif.valor.value())) {
                         auto& var = generator->m_variables.at(expr_identif.token_identif.valor.value());
                         std::stringstream offset;
-                        offset << "QWORD [rsp + " << (generator->m_stack_size - var.stack_pos) * 4 << "]\n"; //stack e registrador %rsp crescem pra baixo. 
+                        /*
+                        A stack é organizada para que cada elemento tenha um tamanho de 8 bytes. Assim, usamos o operador
+                        QWORD para especificar que vamos acessar um local na memória de 8 bytes de tamanho. Para mais, 
+                        multiplicamos o offset por 8, pois ele por si só nos da o número de elementos entre o desejado e
+                        aquele no topo. Porém, cada elemento da stack possui 8 bytes de espaço, independente do tipo do 
+                        dado que ali está. Portanto, multiplicamos por 8 para "descer" o número correto de bytes até o 
+                        endereço desejado.
+                        */
+                        offset << "QWORD [rsp + " << (generator->m_stack_size - var.stack_pos - 1) * 8 << "]\n"; //stack e registrador %rsp crescem pra baixo. 
+                        generator->push(offset.str());
                     } else {
                         std::cerr << "Identificador '" << expr_identif.token_identif.valor.value() << "' não inicializado." << std::endl;
                         exit(EXIT_FAILURE);
