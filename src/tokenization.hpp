@@ -12,7 +12,9 @@ enum class TipoToken {
     parenteses_fecha,
     identif,
     var,
-    igual
+    igual,
+    soma,
+    multi
 };
 
 struct Token {
@@ -69,6 +71,14 @@ class Tokenizer {
                 } else if (peek().value() == '=') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::igual});
+                    continue;
+                } else if (peek().value() == '+') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::soma});
+                    continue;
+                } else if (peek().value() == '*') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::multi});
                     continue;
                 } else if (peek().value() == '(') {
                     consume();

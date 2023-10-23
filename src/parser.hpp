@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <variant>
+#include <assert.h>
 
 #include "./arena.hpp"
 #include "./tokenization.hpp"
@@ -65,6 +66,31 @@ class Parser {
             : m_tokens(std::move(tokens)), m_alloc(1024 * 1024 * 4)
         {}
 
+
+        inline std::optional<node::BinExpr*> parse_bin_expr() {
+            if (auto lado_esquerdo = parse_expr()) {
+                auto bin_expr = m_alloc.alloc<node::BinExpr>();
+                if (peek().has_value() && peek().value().tipo == TipoToken::soma) {
+                    auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
+                    bin_expr_soma->lado_esquerdo = lado_esquerdo;
+                    consume();
+                    if (auto lado_direito = parse_expr()) {
+                        bin_expr_soma->lado_direito = lado_direito;
+                        bin_expr->variant_bin_expr = bin_expr_soma;
+                    } else {
+                        std::cerr << "Esperava-se expressão após operador binário." << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                } else if (peek().has_value() && peek().value().tipo == TipoToken::multi) {
+                    assert(false);
+                } else {
+                    std::cerr << "Operador binário não reconhecido." << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
+            return bin_expr;
+        }
+
         /*
         Método responsável por checar existência de expressão
         após o encontro de um nó atrelado à "_exit"
@@ -88,6 +114,9 @@ class Parser {
                     auto expr = m_alloc.alloc<node::Expr>();
                     expr->variant_expr = expr_identif;
                     return expr;
+                } else if (auto bin_expr = parse_bin_expr()){
+                    auto expr = m_alloc.alloc<node::Expr>();
+                    expr->variant_expr = bin_expr;
                 } else {
                     std::cerr << "Uma expressão pode ser apenas 'int_lit' ou um identificador." << std::endl;
                     exit(EXIT_FAILURE);
