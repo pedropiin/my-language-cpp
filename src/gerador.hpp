@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <unordered_map>
+#include <assert.h>
 
 #include "parser.hpp"
 
@@ -20,16 +21,16 @@ class Generator {
         {}
 
 
-        inline void generate_expr(const node::Expr& expr) {
+        inline void generate_expr(const node::Expr* expr) {
             struct ExprVisitor {
                 Generator* generator;
-                void operator()(const node::ExprIntLit& expr_int_lit) {
-                    generator->m_out << "    mov rax, " << expr_int_lit.token_int.valor.value() << '\n';
+                void operator()(const node::ExprIntLit* expr_int_lit) {
+                    generator->m_out << "    mov rax, " << expr_int_lit->token_int.valor.value() << '\n';
                     generator->push("rax");
                 }
-                void operator()(const node::ExprIdentif& expr_identif) {
-                    if (generator->m_variables.contains(expr_identif.token_identif.valor.value())) {
-                        auto& var = generator->m_variables.at(expr_identif.token_identif.valor.value());
+                void operator()(const node::ExprIdentif* expr_identif) {
+                    if (generator->m_variables.contains(expr_identif->token_identif.valor.value())) {
+                        auto& var = generator->m_variables.at(expr_identif->token_identif.valor.value());
                         std::stringstream offset;
                         /*
                         A stack é organizada para que cada elemento tenha um tamanho de 8 bytes. Assim, usamos o operador
@@ -42,36 +43,39 @@ class Generator {
                         offset << "QWORD [rsp + " << (generator->m_stack_size - var.stack_pos - 1) * 8 << "]\n"; //stack e registrador %rsp crescem pra baixo. 
                         generator->push(offset.str());
                     } else {
-                        std::cerr << "Identificador '" << expr_identif.token_identif.valor.value() << "' não inicializado." << std::endl;
+                        std::cerr << "Identificador '" << expr_identif->token_identif.valor.value() << "' não inicializado." << std::endl;
                         exit(EXIT_FAILURE);
                     }
+                }
+                void operator()(const node::BinExpr* bin_expr) {
+                    assert(false);
                 }
             };
 
             ExprVisitor visitor {.generator = this};
-            std::visit(visitor, expr.variant_expr);
+            std::visit(visitor, expr->variant_expr);
         } 
 
         /*
         
         */
-        inline void generate_statmt(const node::Statmt& statmt) {
+        inline void generate_statmt(const node::Statmt* statmt) {
             struct StatmtVisitor {
                 Generator* generator;
-                void operator()(const node::StatmtExit& statmt_exit) {
-                    generator->generate_expr(statmt_exit.expr);
+                void operator()(const node::StatmtExit* statmt_exit) {
+                    generator->generate_expr(statmt_exit->expr);
                     generator->m_out << "    mov rax, 60\n";
                     generator->pop("rdi");
                     generator->m_out << "    syscall\n";
                 }
-                void operator()(const node::StatmtVar& statmt_var) {
-                    if (statmt_var.token_identif.valor.has_value()) {
-                        if (!generator->m_variables.contains(statmt_var.token_identif.valor.value())) {
+                void operator()(const node::StatmtVar* statmt_var) {
+                    if (statmt_var->token_identif.valor.has_value()) {
+                        if (!generator->m_variables.contains(statmt_var->token_identif.valor.value())) {
                             Variable new_var = {.stack_pos = generator->m_stack_size};
-                            generator->m_variables.insert({statmt_var.token_identif.valor.value(), new_var}); // apenas guardo posição da variável/valor na stack
-                            generator->generate_expr(statmt_var.expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
+                            generator->m_variables.insert({statmt_var->token_identif.valor.value(), new_var}); // apenas guardo posição da variável/valor na stack
+                            generator->generate_expr(statmt_var->expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
                         } else {
-                            std::cerr << "Identificador '" << statmt_var.token_identif.valor.value() << "' já utilizado." << std::endl;
+                            std::cerr << "Identificador '" << statmt_var->token_identif.valor.value() << "' já utilizado." << std::endl;
                             exit(EXIT_FAILURE);
                         }
                     }
@@ -79,7 +83,7 @@ class Generator {
             };
 
             StatmtVisitor visitor {.generator = this};
-            std::visit(visitor, statmt.variant_statmt);
+            std::visit(visitor, statmt->variant_statmt);
         }
 
 
@@ -95,7 +99,7 @@ class Generator {
         inline std::string generate_program() {
             m_out << "global _start\n_start:\n";
 
-                for (const node::Statmt &statmt : m_program.statmts)
+                for (const node::Statmt* statmt : m_program.statmts)
                 {   
                     generate_statmt(statmt);
                 }

@@ -3,6 +3,7 @@
 #include <vector>
 #include <variant>
 
+#include "./arena.hpp"
 #include "./tokenization.hpp"
 
 /*
@@ -11,6 +12,8 @@ implementação da árvore de parsing. Cada nó representa
 uma expressão sintática da linguagem (.ml)
 */
 namespace node {
+    struct BinExpr;
+
     struct ExprIntLit {
         Token token_int;
     };
@@ -20,35 +23,46 @@ namespace node {
     };
 
     struct Expr {
-        std::variant<node::ExprIntLit, node::ExprIdentif> variant_expr;
+        std::variant<node::ExprIntLit*, node::ExprIdentif*, node::BinExpr*> variant_expr;
+    };
+
+    struct BinExprSoma {
+        node::Expr* lado_esquerdo;
+        node::Expr* lado_direito;
+    };
+
+    struct BinExprMulti {
+        node::Expr* lado_esquerdo;
+        node::Expr* lado_direito;
+    };
+
+    struct BinExpr {
+        std::variant<node::BinExprSoma*, node::BinExprMulti*> variant_bin_expr;
     };
 
     struct StatmtExit {
-        node::Expr expr;
+        node::Expr* expr;
     };
 
     struct StatmtVar {
         Token token_identif;
-        node::Expr expr;
+        node::Expr* expr;
     };
 
     struct Statmt {
-        std::variant<node::StatmtVar, node::StatmtExit> variant_statmt;
+        std::variant<node::StatmtVar*, node::StatmtExit*> variant_statmt;
     };
 
     struct Program {
-        std::vector<node::Statmt> statmts;
+        std::vector<node::Statmt*> statmts;
     };
 };
 
-struct NoExprIntLit {
-    Token token;
-};
 
 class Parser {
     public:
         inline Parser(std::vector<Token> tokens) 
-            : m_tokens(std::move(tokens))
+            : m_tokens(std::move(tokens)), m_alloc(1024 * 1024 * 4)
         {}
 
         /*
@@ -60,12 +74,20 @@ class Parser {
         retorna um nó relacionado ao token da expressão. Caso
         contrário, retorna NULL.
         */
-        inline std::optional<node::Expr> parse_expr() {
+        inline std::optional<node::Expr*> parse_expr() {
             if (peek().has_value()) {
                 if (peek().value().tipo == TipoToken::int_lit) {
-                    return node::Expr {.variant_expr = node::ExprIntLit {.token_int = consume()}}; //optaria por criar variavel antes, mas assim nem preciso alocar memória
+                    auto expr_int_lit = m_alloc.alloc<node::ExprIntLit>();
+                    expr_int_lit->token_int = consume();
+                    auto expr = m_alloc.alloc<node::Expr>();
+                    expr->variant_expr = expr_int_lit;
+                    return expr;
                 } else if (peek().value().tipo == TipoToken::identif) {
-                    return node::Expr {.variant_expr = node::ExprIdentif {.token_identif = consume()}};
+                    auto expr_identif = m_alloc.alloc<node::ExprIdentif>();
+                    expr_identif->token_identif = consume();
+                    auto expr = m_alloc.alloc<node::Expr>();
+                    expr->variant_expr = expr_identif;
+                    return expr;
                 } else {
                     std::cerr << "Uma expressão pode ser apenas 'int_lit' ou um identificador." << std::endl;
                     exit(EXIT_FAILURE);
@@ -84,14 +106,14 @@ class Parser {
         - exit_node (std::optional<node::Exit>): nó atrelado
         à expressão de saída do código.
         */
-        inline std::optional<node::Statmt> parse_statmt() {
+        inline std::optional<node::Statmt*> parse_statmt() {
             if (peek().has_value() && peek().value().tipo == TipoToken::_exit) {
                 consume();
-                node::StatmtExit statmt_exit;
+                auto statmt_exit = m_alloc.alloc<node::StatmtExit>();
                 if (peek().has_value() && peek().value().tipo == TipoToken::parenteses_abre) {
                     consume();
                     if (auto node_expr = parse_expr()) {
-                        statmt_exit = {.expr = node_expr.value()};
+                        statmt_exit->expr = node_expr.value();
                     } else {
                         std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão 'int_lit' ou um identificador." << std::endl;
                         exit(EXIT_FAILURE);
@@ -112,17 +134,20 @@ class Parser {
                     std::cerr << "Erro de sintaxe. A função deve conter '('." << std::endl;
                     exit(EXIT_FAILURE);
                 }
-                return node::Statmt {.variant_statmt = statmt_exit};
+                auto statmt = m_alloc.alloc<node::Statmt>();
+                statmt->variant_statmt = statmt_exit;
+                return statmt;
 
             } else if (peek().has_value() && peek().value().tipo == TipoToken::var) {
                 consume();
-                node::StatmtVar statmt_var;
+                auto statmt_var = m_alloc.alloc<node::StatmtVar>();
                 if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
-                    statmt_var = node::StatmtVar {.token_identif = consume()};
+                    statmt_var->token_identif = consume();
+                    // statmt_var = node::StatmtVar {.token_identif = consume()}; //TALVEZ ERRO NISSO AQUI PORQUE CRIEI NOVO NODE PARA FUNCIONAR
                     if (peek().has_value() && peek().value().tipo == TipoToken::igual) {
                         consume();
                         if (auto node_expr = parse_expr()) {
-                            statmt_var.expr = node_expr.value();
+                            statmt_var->expr = node_expr.value();
                         } else {
                             std::cerr << "Expressão inválida." << std::endl;
                             exit(EXIT_FAILURE);
@@ -141,7 +166,9 @@ class Parser {
                     std::cerr << "Declaração inválida. Uma variável precisa de um identificador." << std::endl;
                     exit(EXIT_FAILURE);
                 }
-                return node::Statmt {.variant_statmt = statmt_var};
+                auto statmt = m_alloc.alloc<node::Statmt>();
+                statmt->variant_statmt = statmt_var;
+                return statmt;
             } else {
                 return {};
             }
@@ -168,6 +195,7 @@ class Parser {
     private:
         const std::vector<Token> m_tokens;
         int m_index = 0;
+        ArenaAlloc m_alloc;
 
         /*
         Método que "olha" o próximo índice do vetor de tokens

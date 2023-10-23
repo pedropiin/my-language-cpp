@@ -6,7 +6,7 @@ _start:
     push rax
     mov rax, 81
     push rax
-    push QWORD [rsp + 0]
+    push QWORD [rsp + 16]
 
     mov rax, 60
     pop rdi
