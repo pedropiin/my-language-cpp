@@ -21,16 +21,16 @@ class Generator {
         {}
 
 
-        inline void generate_expr(const node::Expr* expr) {
-            struct ExprVisitor {
+        inline void generate_term(const node::Term* term) {
+            struct TermVisitor {
                 Generator* generator;
-                void operator()(const node::ExprIntLit* expr_int_lit) {
-                    generator->m_out << "    mov rax, " << expr_int_lit->token_int.valor.value() << '\n';
+                void operator()(const node::TermIntLit* term_int_lit) {
+                    generator->m_out << "    mov rax, " << term_int_lit->token_int.valor.value() << '\n';
                     generator->push("rax");
                 }
-                void operator()(const node::ExprIdentif* expr_identif) {
-                    if (generator->m_variables.contains(expr_identif->token_identif.valor.value())) {
-                        auto& var = generator->m_variables.at(expr_identif->token_identif.valor.value());
+                void operator()(const node::TermIdentif* term_identif) {
+                    if (generator->m_variables.contains(term_identif->token_identif.valor.value())) {
+                        auto& var = generator->m_variables.at(term_identif->token_identif.valor.value());
                         std::stringstream offset;
                         /*
                         A stack é organizada para que cada elemento tenha um tamanho de 8 bytes. Assim, usamos o operador
@@ -43,9 +43,20 @@ class Generator {
                         offset << "QWORD [rsp + " << (generator->m_stack_size - var.stack_pos - 1) * 8 << "]\n"; //stack e registrador %rsp crescem pra baixo. 
                         generator->push(offset.str());
                     } else {
-                        std::cerr << "Identificador '" << expr_identif->token_identif.valor.value() << "' não inicializado." << std::endl;
+                        std::cerr << "Identificador '" << term_identif->token_identif.valor.value() << "' não inicializado." << std::endl;
                         exit(EXIT_FAILURE);
                     }
+                }
+            };
+            TermVisitor visitor {.generator = this};
+            std::visit(visitor, term->variant_term);
+        }
+
+        inline void generate_expr(const node::Expr* expr) {
+            struct ExprVisitor {
+                Generator* generator;
+                void operator()(const node::Term* term) {
+                    generator->generate_term(term);
                 }
                 void operator()(const node::BinExpr* bin_expr) {
                     assert(false);

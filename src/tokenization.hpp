@@ -13,8 +13,8 @@ enum class TipoToken {
     identif,
     var,
     igual,
-    soma,
-    multi
+    mais,
+    asterisco
 };
 
 struct Token {
@@ -74,11 +74,11 @@ class Tokenizer {
                     continue;
                 } else if (peek().value() == '+') {
                     consume();
-                    tokens.push_back({.tipo = TipoToken::soma});
+                    tokens.push_back({.tipo = TipoToken::mais});
                     continue;
                 } else if (peek().value() == '*') {
                     consume();
-                    tokens.push_back({.tipo = TipoToken::multi});
+                    tokens.push_back({.tipo = TipoToken::asterisco});
                     continue;
                 } else if (peek().value() == '(') {
                     consume();

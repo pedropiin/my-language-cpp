@@ -6,9 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/arena.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/arena.hpp
 
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/gerador.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/gerador.hpp
 vector
 -
 string
@@ -20,9 +20,9 @@ unordered_map
 assert.h
 -
 parser.hpp
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/parser.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/parser.hpp
 
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/main.cpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/main.cpp
 iostream
 -
 fstream
@@ -34,23 +34,25 @@ optional
 vector
 -
 ./tokenization.hpp
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/tokenization.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/tokenization.hpp
 ./parser.hpp
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/parser.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/parser.hpp
 ./gerador.hpp
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/gerador.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/gerador.hpp
 
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/parser.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/parser.hpp
 vector
 -
 variant
 -
+assert.h
+-
 ./arena.hpp
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/arena.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/arena.hpp
 ./tokenization.hpp
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/tokenization.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/tokenization.hpp
 
-/mnt/c/Users/User/desktop/all/dev/projects/asm-compiler/src/tokenization.hpp
+/mnt/c/Users/Pedro/Desktop/All/dev/projects/asm-compiler/src/tokenization.hpp
 optional
 -
 vector

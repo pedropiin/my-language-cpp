@@ -15,16 +15,20 @@ uma expressão sintática da linguagem (.ml)
 namespace node {
     struct BinExpr;
 
-    struct ExprIntLit {
+    struct TermIntLit {
         Token token_int;
     };
 
-    struct ExprIdentif {
+    struct TermIdentif {
         Token token_identif;
     };
 
+    struct Term {
+        std::variant<node::TermIntLit*, node::TermIdentif*> variant_term;
+    };
+
     struct Expr {
-        std::variant<node::ExprIntLit*, node::ExprIdentif*, node::BinExpr*> variant_expr;
+        std::variant<node::Term*, node::BinExpr*> variant_expr;
     };
 
     struct BinExprSoma {
@@ -67,28 +71,51 @@ class Parser {
         {}
 
 
-        inline std::optional<node::BinExpr*> parse_bin_expr() {
-            if (auto lado_esquerdo = parse_expr()) {
-                auto bin_expr = m_alloc.alloc<node::BinExpr>();
-                if (peek().has_value() && peek().value().tipo == TipoToken::soma) {
-                    auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
-                    bin_expr_soma->lado_esquerdo = lado_esquerdo;
-                    consume();
-                    if (auto lado_direito = parse_expr()) {
-                        bin_expr_soma->lado_direito = lado_direito;
-                        bin_expr->variant_bin_expr = bin_expr_soma;
-                    } else {
-                        std::cerr << "Esperava-se expressão após operador binário." << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-                } else if (peek().has_value() && peek().value().tipo == TipoToken::multi) {
-                    assert(false);
-                } else {
-                    std::cerr << "Operador binário não reconhecido." << std::endl;
-                    exit(EXIT_FAILURE);
+        // TODO: implementar parse_bin_expr com visitor, permitindo 
+        //ter a propria função
+        // inline std::optional<node::BinExpr*> parse_bin_expr() {
+        //     if (auto lado_esquerdo = parse_expr()) {
+        //         auto bin_expr = m_alloc.alloc<node::BinExpr>();
+        //         if (peek().has_value() && peek().value().tipo == TipoToken::mais) {
+        //             auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
+        //             bin_expr_soma->lado_esquerdo = lado_esquerdo.value();
+        //             consume();
+        //             if (auto lado_direito = parse_expr()) {
+        //                 bin_expr_soma->lado_direito = lado_direito.value();
+        //                 bin_expr->variant_bin_expr = bin_expr_soma;
+        //                 return bin_expr;
+        //             } else {
+        //                 std::cerr << "Esperava-se expressão após operador binário." << std::endl;
+        //                 exit(EXIT_FAILURE);
+        //             }
+        //         } else if (peek().has_value() && peek().value().tipo == TipoToken::asterisco) {
+        //             assert(false);
+        //         } else {
+        //             std::cerr << "Operador binário não reconhecido." << std::endl;
+        //             exit(EXIT_FAILURE);
+        //         }
+        //     }
+        //     return {};
+        // }
+
+        inline std::optional<node::Term*> parse_term() {
+            // TESTAR ALOCANDO term AQUI, PRA SÓ TER QUE ALOCAR UMA VEZ
+            if (peek().has_value()) {
+                if (peek().value().tipo == TipoToken::int_lit) {
+                    auto term_int_lit = m_alloc.alloc<node::TermIntLit>();
+                    term_int_lit->token_int = consume();
+                    auto term = m_alloc.alloc<node::Term>();
+                    term->variant_term = term_int_lit;
+                    return term;
+                } else if (peek().value().tipo == TipoToken::identif) {
+                    auto term_identif = m_alloc.alloc<node::TermIdentif>();
+                    term_identif->token_identif = consume();
+                    auto term = m_alloc.alloc<node::Term>();
+                    term->variant_term = term_identif;
+                    return term;
                 }
-            }
-            return bin_expr;
+            } 
+            return {};
         }
 
         /*
@@ -101,29 +128,32 @@ class Parser {
         contrário, retorna NULL.
         */
         inline std::optional<node::Expr*> parse_expr() {
-            if (peek().has_value()) {
-                if (peek().value().tipo == TipoToken::int_lit) {
-                    auto expr_int_lit = m_alloc.alloc<node::ExprIntLit>();
-                    expr_int_lit->token_int = consume();
-                    auto expr = m_alloc.alloc<node::Expr>();
-                    expr->variant_expr = expr_int_lit;
-                    return expr;
-                } else if (peek().value().tipo == TipoToken::identif) {
-                    auto expr_identif = m_alloc.alloc<node::ExprIdentif>();
-                    expr_identif->token_identif = consume();
-                    auto expr = m_alloc.alloc<node::Expr>();
-                    expr->variant_expr = expr_identif;
-                    return expr;
-                } else if (auto bin_expr = parse_bin_expr()){
-                    auto expr = m_alloc.alloc<node::Expr>();
-                    expr->variant_expr = bin_expr;
+            if (auto term = parse_term()) {
+                // TODO: implementar multiplicação
+                if (peek().has_value() && peek().value().tipo == TipoToken::mais) {
+                    auto bin_expr = m_alloc.alloc<node::BinExpr>();
+                    auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
+                    auto lado_esquerdo_expr = m_alloc.alloc<node::Expr>();
+                    lado_esquerdo_expr->variant_expr = term.value();
+                    bin_expr_soma->lado_esquerdo = lado_esquerdo_expr;
+                    consume();
+                    if (auto lado_direito_expr = parse_expr()) {
+                        bin_expr_soma->lado_direito = lado_direito_expr.value();
+                        bin_expr->variant_bin_expr = bin_expr_soma;
+                        auto expr = m_alloc.alloc<node::Expr>();
+                        expr->variant_expr = bin_expr;
+                        return expr;
+                    } else {
+                        std::cerr << "Esperava-se expressão após operador binário." << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
                 } else {
-                    std::cerr << "Uma expressão pode ser apenas 'int_lit' ou um identificador." << std::endl;
-                    exit(EXIT_FAILURE);
+                    auto expr = m_alloc.alloc<node::Expr>();
+                    expr->variant_expr = term.value();
+                    return expr;
                 }
-            } else {
-                return {};
-            }
+            } 
+            return {};
         }
 
         /*
