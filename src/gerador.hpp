@@ -52,6 +52,9 @@ class Generator {
             std::visit(visitor, term->variant_term);
         }
 
+        /*
+        
+        */
         inline void generate_expr(const node::Expr* expr) {
             struct ExprVisitor {
                 Generator* generator;
@@ -59,7 +62,12 @@ class Generator {
                     generator->generate_term(term);
                 }
                 void operator()(const node::BinExpr* bin_expr) {
-                    assert(false);
+                    generator->generate_expr(bin_expr->variant_bin_expr->lado_esquerdo);
+                    generator->generate_expr(bin_expr->variant_bin_expr->lado_direito);
+                    generator->pop("rax");
+                    generator->pop("rbx");
+                    generator->m_out << "    add rax, rbx\n";
+                    generator->push("rax");
                 }
             };
 
@@ -124,11 +132,17 @@ class Generator {
 
     private:
 
+        /*
+        TODO
+        */
         inline void push(const std::string& reg) {
             m_out << "    push " << reg << '\n';
             m_stack_size++;
         }
 
+        /*
+        TODO
+        */
         inline void pop(const std::string& reg) {
             m_out << "    pop " << reg << '\n';
             m_stack_size--;

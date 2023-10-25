@@ -1,3 +1,2 @@
-var x=10;
-var y=100;
+var x = 1 + 2 + 3;
 exit(x);

@@ -42,7 +42,7 @@ namespace node {
     };
 
     struct BinExpr {
-        std::variant<node::BinExprSoma*, node::BinExprMulti*> variant_bin_expr;
+        node::BinExprSoma* variant_bin_expr;
     };
 
     struct StatmtExit {
@@ -114,7 +114,7 @@ class Parser {
                     term->variant_term = term_identif;
                     return term;
                 }
-            } 
+            }
             return {};
         }
 
