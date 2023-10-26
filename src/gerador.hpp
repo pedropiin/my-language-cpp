@@ -87,7 +87,12 @@ class Generator {
                     generator->push("rax");
                 }
                 void operator()(const node::BinExprMulti* multiplicacao) {
-                    assert(false);
+                    generator->generate_expr(multiplicacao->lado_esquerdo);
+                    generator->generate_expr(multiplicacao->lado_direito);
+                    generator->pop("rax");
+                    generator->pop("rbx");
+                    generator->m_out << "    mul rbx\n";
+                    generator->push("rax");
                 }
             };
 

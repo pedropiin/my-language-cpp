@@ -1,2 +1,4 @@
 var x = 1 + 2 * 3;
-exit(x);
+var y = 2 * 2 * 2 * 2 * 2;
+var z = x * y;
+exit(z);

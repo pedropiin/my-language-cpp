@@ -120,40 +120,58 @@ class Parser {
         }
 
         /*
-        Método responsável por checar existência de expressão
-        após o encontro de um nó atrelado à "_exit"
-        PARÂMETROS:
-        RETURNS:
-        - no (std::optional<node::Expr): caso haja expressão, 
-        retorna um nó relacionado ao token da expressão. Caso
-        contrário, retorna NULL.
+        TODO: documentacao
         */
-        inline std::optional<node::Expr*> parse_expr() {
-            if (auto term = parse_term()) {
-                if (peek().has_value() && peek().value().tipo == TipoToken::mais) {
-                    auto bin_expr = m_alloc.alloc<node::BinExpr>();
-                    auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
-                    auto lado_esquerdo_expr = m_alloc.alloc<node::Expr>();
-                    lado_esquerdo_expr->variant_expr = term.value();
-                    bin_expr_soma->lado_esquerdo = lado_esquerdo_expr;
-                    consume();
-                    if (auto lado_direito_expr = parse_expr()) {
-                        bin_expr_soma->lado_direito = lado_direito_expr.value();
-                        bin_expr->variant_bin_expr = bin_expr_soma;
-                        auto expr = m_alloc.alloc<node::Expr>();
-                        expr->variant_expr = bin_expr;
-                        return expr;
-                    } else {
-                        std::cerr << "Esperava-se expressão após operador binário." << std::endl;
-                        exit(EXIT_FAILURE);
+        inline std::optional<node::Expr*> parse_expr(int min_prec = 0) {
+            auto term_esquerda = parse_term();
+            if (!term_esquerda.has_value()) {
+                return {};
+            }
+            auto expr_esquerda = m_alloc.alloc<node::Expr>();
+            expr_esquerda->variant_expr = term_esquerda.value();
+
+            while (true) {
+                std::optional<Token> token_atual = peek();
+                std::optional<int> prec;
+                if (token_atual.has_value()) {
+                    prec = bin_prec(token_atual.value().tipo);
+                    if (!prec.has_value() || prec < min_prec) {
+                        break;
                     }
                 } else {
-                    auto expr = m_alloc.alloc<node::Expr>();
-                    expr->variant_expr = term.value();
-                    return expr;
+                    break;
                 }
-            } 
-            return {};
+                Token operador = consume();
+                auto expr_direita = parse_expr(prec.value() + 1);
+                if (!expr_direita.has_value()) {
+                    std::cerr << "Expressão inválida. Esperava-se um termo após o operador." << std::endl;
+                    exit(EXIT_FAILURE);
+                } 
+                auto bin_expr = m_alloc.alloc<node::BinExpr>();
+                auto expr_esquerda_temp = m_alloc.alloc<node::Expr>();
+                expr_esquerda_temp->variant_expr = expr_esquerda->variant_expr; //TODO: testar por referencia sem ter que criar variavel temp
+
+                switch (operador.tipo) {
+                    case TipoToken::mais:
+                        {
+                            auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
+                            bin_expr_soma->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr_soma->lado_direito = expr_direita.value();
+                            bin_expr->variant_bin_expr = bin_expr_soma;
+                        }
+                        break;
+                    case TipoToken::asterisco:
+                        {
+                            auto bin_expr_multi = m_alloc.alloc<node::BinExprMulti>();
+                            bin_expr_multi->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr_multi->lado_direito = expr_direita.value();
+                            bin_expr->variant_bin_expr = bin_expr_multi;
+                        }
+                        break;
+                }
+                expr_esquerda->variant_expr = bin_expr;
+            }
+            return expr_esquerda;
         }
 
         /*

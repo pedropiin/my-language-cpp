@@ -22,6 +22,17 @@ struct Token {
     std::optional<std::string> valor;
 };
 
+inline std::optional<int> bin_prec(TipoToken tipo) {
+    switch(tipo) {
+        case TipoToken::mais:
+            return 0;
+        case TipoToken::asterisco:
+            return 1;
+        default:
+            return {};
+    }
+}
+
 class Tokenizer {
     public:
         inline Tokenizer(const std::string src) 
