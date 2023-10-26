@@ -123,17 +123,21 @@ class Generator {
                     generate_statmt(statmt);
                 }
 
-            m_out << "    mov rax, 60\n";
-            m_out << "    mov rdi, 0\n";
+            m_out << "    mov rax, 60\n"; //código da expressão de saída para o assembly
+            m_out << "    mov rdi, 0\n"; // código de saída do programa
             m_out << "    syscall\n";
             return m_out.str();
         }
 
 
     private:
+        const node::Program m_program;
+        std::stringstream m_out;
+        size_t m_stack_size = 0;
+        std::unordered_map<std::string, Variable> m_variables;
 
         /*
-        TODO
+        TODO: documentação
         */
         inline void push(const std::string& reg) {
             m_out << "    push " << reg << '\n';
@@ -141,15 +145,10 @@ class Generator {
         }
 
         /*
-        TODO
+        TODO: documentação
         */
         inline void pop(const std::string& reg) {
             m_out << "    pop " << reg << '\n';
             m_stack_size--;
         }
-
-        const node::Program m_program;
-        std::stringstream m_out;
-        size_t m_stack_size = 0;
-        std::unordered_map<std::string, Variable> m_variables;
 };

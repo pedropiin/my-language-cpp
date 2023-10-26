@@ -71,7 +71,8 @@ class Parser {
         {}
 
 
-        // TODO: implementar parse_bin_expr com visitor, permitindo 
+        // TODO: implementar parse_bin_expr com visitor, permitindo
+
         //ter a propria função
         // inline std::optional<node::BinExpr*> parse_bin_expr() {
         //     if (auto lado_esquerdo = parse_expr()) {
@@ -98,24 +99,24 @@ class Parser {
         //     return {};
         // }
 
+
+        /*
+        TODO: documentação
+        */
         inline std::optional<node::Term*> parse_term() {
-            // TESTAR ALOCANDO term AQUI, PRA SÓ TER QUE ALOCAR UMA VEZ
+            auto term = m_alloc.alloc<node::Term>();
             if (peek().has_value()) {
                 if (peek().value().tipo == TipoToken::int_lit) {
                     auto term_int_lit = m_alloc.alloc<node::TermIntLit>();
                     term_int_lit->token_int = consume();
-                    auto term = m_alloc.alloc<node::Term>();
                     term->variant_term = term_int_lit;
-                    return term;
                 } else if (peek().value().tipo == TipoToken::identif) {
                     auto term_identif = m_alloc.alloc<node::TermIdentif>();
                     term_identif->token_identif = consume();
-                    auto term = m_alloc.alloc<node::Term>();
                     term->variant_term = term_identif;
-                    return term;
                 }
             }
-            return {};
+            return term;
         }
 
         /*
@@ -169,30 +170,15 @@ class Parser {
             if (peek().has_value() && peek().value().tipo == TipoToken::_exit) {
                 consume();
                 auto statmt_exit = m_alloc.alloc<node::StatmtExit>();
-                if (peek().has_value() && peek().value().tipo == TipoToken::parenteses_abre) {
-                    consume();
-                    if (auto node_expr = parse_expr()) {
-                        statmt_exit->expr = node_expr.value();
-                    } else {
-                        std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão 'int_lit' ou um identificador." << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-                    if (peek().has_value() && peek().value().tipo == TipoToken::parenteses_fecha) {
-                        consume();
-                    } else {
-                        std::cerr << "Erro de sintaxe. Esperava-se ')' ao final da função." << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-                    if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
-                        consume();
-                    } else {
-                        std::cerr << "Erro de sintaxe. Esperava-se ';' no final da linha." << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
+                try_consume(TipoToken::parenteses_abre, "Erro de sintaxe. A função deve conter '('.");
+                if (auto node_expr = parse_expr()) {
+                    statmt_exit->expr = node_expr.value();
                 } else {
-                    std::cerr << "Erro de sintaxe. A função deve conter '('." << std::endl;
+                    std::cerr << "Expressão inválida. A função 'exit' deve conter uma expressão 'int_lit' ou um identificador." << std::endl;
                     exit(EXIT_FAILURE);
                 }
+                try_consume(TipoToken::parenteses_fecha, "Erro de sintaxe. Esperava-se ')' ao final da função.");
+                try_consume(TipoToken::ponto_virgula, "Erro de sintaxe. Esperava-se ';' no final da linha.");
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_exit;
                 return statmt;
@@ -202,25 +188,14 @@ class Parser {
                 auto statmt_var = m_alloc.alloc<node::StatmtVar>();
                 if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
                     statmt_var->token_identif = consume();
-                    // statmt_var = node::StatmtVar {.token_identif = consume()}; //TALVEZ ERRO NISSO AQUI PORQUE CRIEI NOVO NODE PARA FUNCIONAR
-                    if (peek().has_value() && peek().value().tipo == TipoToken::igual) {
-                        consume();
-                        if (auto node_expr = parse_expr()) {
-                            statmt_var->expr = node_expr.value();
-                        } else {
-                            std::cerr << "Expressão inválida." << std::endl;
-                            exit(EXIT_FAILURE);
-                        }
-                        if (peek().has_value() && peek().value().tipo == TipoToken::ponto_virgula) {
-                            consume();
-                        } else {
-                            std::cerr << "Erro de sintaxe. Esperava-se ';' no final da linha." << std::endl;
-                            exit(EXIT_FAILURE);
-                        }
+                    try_consume(TipoToken::igual, "Erro de sintaxe. Esperava-se '=' após declaração de variável.");
+                    if (auto node_expr = parse_expr()) {
+                        statmt_var->expr = node_expr.value();
                     } else {
-                        std::cerr << "Erro de sintaxe. Esperava-se '=' após declaração de variável." << std::endl;
+                        std::cerr << "Expressão inválida." << std::endl;
                         exit(EXIT_FAILURE);
                     }
+                    try_consume(TipoToken::ponto_virgula, "Erro de sintaze. Esperava-se ';' no final da linha.");
                 } else {
                     std::cerr << "Declaração inválida. Uma variável precisa de um identificador." << std::endl;
                     exit(EXIT_FAILURE);
@@ -234,7 +209,7 @@ class Parser {
         }
 
         /*
-        
+        TODO: documentação
         */
         inline std::optional<node::Program> parse_program() {
             node::Program program;
@@ -287,5 +262,17 @@ class Parser {
             Token token = m_tokens[m_index];
             m_index++;
             return token;
+        }
+
+        /*
+        TODO: documentação
+        */
+        inline Token try_consume(TipoToken tipo, const std::string& erro_desc) {
+            if (peek().has_value() && peek().value().tipo == tipo) {
+                return consume();
+            } else {
+                std::cerr << erro_desc << std::endl;
+                exit(EXIT_FAILURE);
+            }
         }
 };

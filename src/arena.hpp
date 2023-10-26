@@ -21,6 +21,9 @@ class ArenaAlloc {
             m_arena_ptr = m_buffer;
         }
 
+        /*
+        TODO: documentação
+        */
         template <typename T> inline T* alloc() {
             void* arena_ptr = m_arena_ptr;
             m_arena_ptr += sizeof(T);
@@ -30,7 +33,10 @@ class ArenaAlloc {
         // deletando constructor de copia e de atribuição
         ArenaAlloc(const ArenaAlloc&) = delete;
         ArenaAlloc& operator=(const ArenaAlloc&) = delete;
-
+        
+        /*
+        TODO: documentação
+        */
         inline ~ArenaAlloc() {
             free(m_buffer);
         }
