@@ -20,7 +20,9 @@ class Generator {
             : m_program(std::move(program))
         {}
 
-
+        /*
+        TODO: documentação
+        */
         inline void generate_term(const node::Term* term) {
             struct TermVisitor {
                 Generator* generator;
@@ -53,7 +55,7 @@ class Generator {
         }
 
         /*
-        
+        TODO: documentação
         */
         inline void generate_expr(const node::Expr* expr) {
             struct ExprVisitor {
@@ -62,21 +64,39 @@ class Generator {
                     generator->generate_term(term);
                 }
                 void operator()(const node::BinExpr* bin_expr) {
-                    generator->generate_expr(bin_expr->variant_bin_expr->lado_esquerdo);
-                    generator->generate_expr(bin_expr->variant_bin_expr->lado_direito);
-                    generator->pop("rax");
-                    generator->pop("rbx");
-                    generator->m_out << "    add rax, rbx\n";
-                    generator->push("rax");
+                    generator->generate_bin_expr(bin_expr);
                 }
             };
 
             ExprVisitor visitor {.generator = this};
             std::visit(visitor, expr->variant_expr);
-        } 
+        }
 
         /*
-        
+        TODO: documentação
+        */
+        inline void generate_bin_expr(const node::BinExpr* bin_expr) {
+            struct BinExprVisitor {
+                Generator* generator;
+                void operator()(const node::BinExprSoma* soma) {
+                    generator->generate_expr(soma->lado_esquerdo);
+                    generator->generate_expr(soma->lado_direito);
+                    generator->pop("rax");
+                    generator->pop("rbx");
+                    generator->m_out << "    add rax, rbx\n";
+                    generator->push("rax");
+                }
+                void operator()(const node::BinExprMulti* multiplicacao) {
+                    assert(false);
+                }
+            };
+
+            BinExprVisitor visitor {.generator = this};
+            std::visit(visitor, bin_expr->variant_bin_expr);
+        }
+
+        /*
+        TODO: documentação
         */
         inline void generate_statmt(const node::Statmt* statmt) {
             struct StatmtVisitor {
@@ -104,6 +124,7 @@ class Generator {
             StatmtVisitor visitor {.generator = this};
             std::visit(visitor, statmt->variant_statmt);
         }
+
 
 
         /*Função que converte os tokens obtidos pela tokenização

@@ -50,15 +50,12 @@ class Tokenizer {
                     if (buffer.compare("exit") == 0) {
                         tokens.push_back({.tipo = TipoToken::_exit});
                         buffer.clear();
-                        continue;
                     } else if (buffer.compare("var") == 0) {
                         tokens.push_back({.tipo = TipoToken::var});
                         buffer.clear();
-                        continue;
                     } else {
                         tokens.push_back({.tipo = TipoToken::identif, .valor = buffer});
                         buffer.clear();
-                        continue;
                     }
                 } else if (std::isdigit(peek().value())) {
                     buffer.push_back(consume());
@@ -67,33 +64,26 @@ class Tokenizer {
                     }
                     tokens.push_back({.tipo = TipoToken::int_lit, .valor = buffer});
                     buffer.clear();
-                    continue;
                 } else if (peek().value() == '=') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::igual});
-                    continue;
                 } else if (peek().value() == '+') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::mais});
-                    continue;
                 } else if (peek().value() == '*') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::asterisco});
-                    continue;
                 } else if (peek().value() == '(') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::parenteses_abre});
-                    continue;
                 } else if (peek().value() == ')') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::parenteses_fecha});
                 } else if (peek().value() == ';') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::ponto_virgula});
-                    continue;
                 } else if (std::isspace(peek().value())) {
                     consume();
-                    continue;
                 } else {
                     std::cerr << "Erro." << std::endl;
                     exit(EXIT_FAILURE);

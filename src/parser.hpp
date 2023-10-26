@@ -42,7 +42,7 @@ namespace node {
     };
 
     struct BinExpr {
-        node::BinExprSoma* variant_bin_expr;
+        std::variant<node::BinExprSoma*, node::BinExprMulti*> variant_bin_expr;
     };
 
     struct StatmtExit {
@@ -130,7 +130,6 @@ class Parser {
         */
         inline std::optional<node::Expr*> parse_expr() {
             if (auto term = parse_term()) {
-                // TODO: implementar multiplicação
                 if (peek().has_value() && peek().value().tipo == TipoToken::mais) {
                     auto bin_expr = m_alloc.alloc<node::BinExpr>();
                     auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
