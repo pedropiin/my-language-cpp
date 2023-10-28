@@ -121,6 +121,7 @@ class Parser {
 
         /*
         TODO: documentacao
+        https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing
         */
         inline std::optional<node::Expr*> parse_expr(int min_prec = 0) {
             auto term_esquerda = parse_term();
@@ -149,7 +150,7 @@ class Parser {
                 } 
                 auto bin_expr = m_alloc.alloc<node::BinExpr>();
                 auto expr_esquerda_temp = m_alloc.alloc<node::Expr>();
-                expr_esquerda_temp->variant_expr = expr_esquerda->variant_expr; //TODO: testar por referencia sem ter que criar variavel temp
+                expr_esquerda_temp->variant_expr = expr_esquerda->variant_expr; 
 
                 switch (operador.tipo) {
                     case TipoToken::mais:
