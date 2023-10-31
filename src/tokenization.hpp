@@ -14,8 +14,13 @@ enum class TipoToken {
     var,
     igual,
     mais,
-    asterisco
+    menos,
+    asterisco,
+    barra_div
 };
+
+//TODO: implementar tipos diferentes de enum para
+//tokens de diferentes funções
 
 struct Token {
     TipoToken tipo;
@@ -26,7 +31,11 @@ inline std::optional<int> bin_prec(TipoToken tipo) {
     switch(tipo) {
         case TipoToken::mais:
             return 0;
+        case TipoToken::menos:
+            return 0;
         case TipoToken::asterisco:
+            return 1;
+        case TipoToken::barra_div:
             return 1;
         default:
             return {};
@@ -81,9 +90,15 @@ class Tokenizer {
                 } else if (peek().value() == '+') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::mais});
+                } else if (peek().value() == '-') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::menos});
                 } else if (peek().value() == '*') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::asterisco});
+                } else if (peek().value() == '/') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::barra_div});
                 } else if (peek().value() == '(') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::parenteses_abre});

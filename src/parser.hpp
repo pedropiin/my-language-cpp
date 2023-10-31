@@ -36,13 +36,23 @@ namespace node {
         node::Expr* lado_direito;
     };
 
+    struct BinExprSub {
+        node::Expr* lado_esquerdo;
+        node::Expr* lado_direito;
+    };
+
     struct BinExprMulti {
         node::Expr* lado_esquerdo;
         node::Expr* lado_direito;
     };
 
+    struct BinExprDiv {
+        node::Expr* lado_esquerdo;
+        node::Expr* lado_direito;
+    };
+
     struct BinExpr {
-        std::variant<node::BinExprSoma*, node::BinExprMulti*> variant_bin_expr;
+        std::variant<node::BinExprSoma*, node::BinExprSub*, node::BinExprMulti*, node::BinExprDiv*> variant_bin_expr;
     };
 
     struct StatmtExit {
@@ -63,6 +73,7 @@ namespace node {
     };
 };
 
+//TODO: implementar Token operador dentro das structs de operação binaria
 
 class Parser {
     public:
@@ -161,12 +172,28 @@ class Parser {
                             bin_expr->variant_bin_expr = bin_expr_soma;
                         }
                         break;
+                    case TipoToken::menos:
+                        {
+                            auto bin_expr_sub = m_alloc.alloc<node::BinExprSub>();
+                            bin_expr_sub->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr_sub->lado_direito = expr_direita.value();
+                            bin_expr->variant_bin_expr = bin_expr_sub;
+                        }
+                        break;
                     case TipoToken::asterisco:
                         {
                             auto bin_expr_multi = m_alloc.alloc<node::BinExprMulti>();
                             bin_expr_multi->lado_esquerdo = expr_esquerda_temp;
                             bin_expr_multi->lado_direito = expr_direita.value();
                             bin_expr->variant_bin_expr = bin_expr_multi;
+                        }
+                        break;
+                    case TipoToken::barra_div:
+                        {
+                            auto bin_expr_div = m_alloc.alloc<node::BinExprDiv>();
+                            bin_expr_div->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr_div->lado_direito = expr_direita.value();
+                            bin_expr->variant_bin_expr = bin_expr_div;
                         }
                         break;
                 }

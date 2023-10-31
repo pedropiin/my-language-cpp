@@ -1,4 +1,2 @@
-var x = 1 + 2 * 3;
-var y = 2 * 2 * 2 * 2 * 2;
-var z = x * y;
-exit(z);
+var x = 10 / 5;
+exit(x);

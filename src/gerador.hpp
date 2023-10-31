@@ -86,12 +86,29 @@ class Generator {
                     generator->m_out << "    add rax, rbx\n";
                     generator->push("rax");
                 }
+                void operator()(const node::BinExprSub* subtracao)
+                {
+                    generator->generate_expr(subtracao->lado_esquerdo);
+                    generator->generate_expr(subtracao->lado_direito);
+                    generator->pop("rax");
+                    generator->pop("rbx");
+                    generator->m_out << "    sub rbx, rax\n";
+                    generator->push("rbx");
+                }
                 void operator()(const node::BinExprMulti* multiplicacao) {
                     generator->generate_expr(multiplicacao->lado_esquerdo);
                     generator->generate_expr(multiplicacao->lado_direito);
                     generator->pop("rax");
                     generator->pop("rbx");
                     generator->m_out << "    mul rbx\n";
+                    generator->push("rax");
+                }
+                void operator()(const node::BinExprDiv* divisao) {
+                    generator->generate_expr(divisao->lado_esquerdo);
+                    generator->generate_expr(divisao->lado_direito);
+                    generator->pop("rbx"); 
+                    generator->pop("rax"); 
+                    generator->m_out << "    div rbx\n";
                     generator->push("rax");
                 }
             };
