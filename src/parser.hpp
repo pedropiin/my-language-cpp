@@ -15,6 +15,8 @@ uma expressão sintática da linguagem (.ml)
 namespace node {
     struct BinExpr;
 
+    struct Expr;
+
     struct TermIntLit {
         Token token_int;
     };
@@ -22,9 +24,13 @@ namespace node {
     struct TermIdentif {
         Token token_identif;
     };
+    
+    struct TermParen {
+        node::Expr *expr;
+    };
 
     struct Term {
-        std::variant<node::TermIntLit*, node::TermIdentif*> variant_term;
+        std::variant<node::TermIntLit*, node::TermIdentif*, node::TermParen*> variant_term;
     };
 
     struct Expr {
@@ -125,6 +131,17 @@ class Parser {
                     auto term_identif = m_alloc.alloc<node::TermIdentif>();
                     term_identif->token_identif = consume();
                     term->variant_term = term_identif;
+                } else if (peek().value().tipo == TipoToken::parenteses_abre) {
+                    consume();
+                    auto expr = parse_expr();
+                    if (!expr.has_value()) {
+                        std::cerr << "Expressão inválida." << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                    try_consume(TipoToken::parenteses_fecha, "Esperava-se ')' ao final da expressão.");
+                    auto term_paren = m_alloc.alloc<node::TermParen>();
+                    term_paren->expr = expr.value();
+                    term->variant_term = term_paren;
                 }
             }
             return term;

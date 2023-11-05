@@ -49,6 +49,9 @@ class Generator {
                         exit(EXIT_FAILURE);
                     }
                 }
+                void operator()(const node::TermParen* term_paren) {
+                    generator->generate_expr(term_paren->expr);
+                }
             };
             TermVisitor visitor {.generator = this};
             std::visit(visitor, term->variant_term);
