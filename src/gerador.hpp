@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
-#include <unordered_map>
+#include <map>
 #include <assert.h>
 
 #include "parser.hpp"
@@ -144,6 +144,9 @@ class Generator {
                         }
                     }
                 }
+                void operator()(const node::StatmtScope* statmt_scope) {
+
+                }
             };
 
             StatmtVisitor visitor {.generator = this};
@@ -180,7 +183,7 @@ class Generator {
         const node::Program m_program;
         std::stringstream m_out;
         size_t m_stack_size = 0;
-        std::unordered_map<std::string, Variable> m_variables;
+        std::map<std::string, Variable> m_variables;
 
         /*
         TODO: documentação

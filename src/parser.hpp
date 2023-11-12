@@ -14,8 +14,8 @@ uma expressão sintática da linguagem (.ml)
 */
 namespace node {
     struct BinExpr;
-
     struct Expr;
+    struct Statmt;
 
     struct TermIntLit {
         Token token_int;
@@ -70,8 +70,12 @@ namespace node {
         node::Expr* expr;
     };
 
+    struct StatmtScope {
+        std::vector<node::Statmt*> statmts_scope;
+    }
+
     struct Statmt {
-        std::variant<node::StatmtVar*, node::StatmtExit*> variant_statmt;
+        std::variant<node::StatmtVar*, node::StatmtExit*, node::StatmtScope*> variant_statmt;
     };
 
     struct Program {

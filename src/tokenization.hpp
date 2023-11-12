@@ -16,7 +16,9 @@ enum class TipoToken {
     mais,
     menos,
     asterisco,
-    barra_div
+    barra_div,
+    chaves_abre,
+    chaves_fecha
 };
 
 //TODO: implementar tipos diferentes de enum para
@@ -108,6 +110,12 @@ class Tokenizer {
                 } else if (peek().value() == ';') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::ponto_virgula});
+                } else if (peek().value() == '{') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::chaves_abre});
+                } else if (peek().value() == '}') {
+                    consume();
+                    tokens.push_back({.tipo = TipoToken::chaves_fecha});
                 } else if (std::isspace(peek().value())) {
                     consume();
                 } else {
