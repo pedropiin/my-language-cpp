@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/src/main.cpp" "/mnt/c/Users/User/Desktop/all/dev/projects/asm-compiler/build/CMakeFiles/compiler.dir/main.cpp.o"
+  "/mnt/c/Users/User/Desktop/all/dev/projects/my-language-cpp/src/main.cpp" "/mnt/c/Users/User/Desktop/all/dev/projects/my-language-cpp/build/CMakeFiles/compiler.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

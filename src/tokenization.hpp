@@ -119,7 +119,7 @@ class Tokenizer {
                 } else if (std::isspace(peek().value())) {
                     consume();
                 } else {
-                    std::cerr << "Erro." << std::endl;
+                    std::cerr << "Erro na tokenização do arquivo." << std::endl;
                     exit(EXIT_FAILURE);
                 }
             }

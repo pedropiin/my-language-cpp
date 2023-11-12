@@ -145,7 +145,11 @@ class Generator {
                     }
                 }
                 void operator()(const node::StatmtScope* statmt_scope) {
-
+                    generator->begin_scope();
+                    for (const node::Statmt* statmt : statmt_scope->statmts_scope) {
+                        generator->generate_statmt(statmt);
+                    }
+                    generator->end_scope();
                 }
             };
 
@@ -184,6 +188,7 @@ class Generator {
         std::stringstream m_out;
         size_t m_stack_size = 0;
         std::map<std::string, Variable> m_variables;
+        std::vector<size_t> m_scopes;
 
         /*
         TODO: documentação
@@ -199,5 +204,25 @@ class Generator {
         inline void pop(const std::string& reg) {
             m_out << "    pop " << reg << '\n';
             m_stack_size--;
+        }
+
+        /*
+        TODO: documentação
+        */
+        inline void begin_scope() {
+            m_scopes.push_back(m_variables.size());
+        }
+
+        /*
+        TODO: documentação
+        */
+        inline void end_scope() {
+            size_t num_pops = m_variables.size() - m_scopes.back();
+            m_out << "    add rsp, " << num_pops * 8 << "\n";
+            m_stack_size -= num_pops;
+            for (int i = 0; i < num_pops; i ++) {
+                m_variables.erase(m_variables.rbegin()->first);
+            }
+            m_scopes.pop_back();
         }
 };

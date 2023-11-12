@@ -72,7 +72,7 @@ namespace node {
 
     struct StatmtScope {
         std::vector<node::Statmt*> statmts_scope;
-    }
+    };
 
     struct Statmt {
         std::variant<node::StatmtVar*, node::StatmtExit*, node::StatmtScope*> variant_statmt;
@@ -90,36 +90,6 @@ class Parser {
         inline Parser(std::vector<Token> tokens) 
             : m_tokens(std::move(tokens)), m_alloc(1024 * 1024 * 4)
         {}
-
-
-        // TODO: implementar parse_bin_expr com visitor, permitindo
-
-        //ter a propria função
-        // inline std::optional<node::BinExpr*> parse_bin_expr() {
-        //     if (auto lado_esquerdo = parse_expr()) {
-        //         auto bin_expr = m_alloc.alloc<node::BinExpr>();
-        //         if (peek().has_value() && peek().value().tipo == TipoToken::mais) {
-        //             auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
-        //             bin_expr_soma->lado_esquerdo = lado_esquerdo.value();
-        //             consume();
-        //             if (auto lado_direito = parse_expr()) {
-        //                 bin_expr_soma->lado_direito = lado_direito.value();
-        //                 bin_expr->variant_bin_expr = bin_expr_soma;
-        //                 return bin_expr;
-        //             } else {
-        //                 std::cerr << "Esperava-se expressão após operador binário." << std::endl;
-        //                 exit(EXIT_FAILURE);
-        //             }
-        //         } else if (peek().has_value() && peek().value().tipo == TipoToken::asterisco) {
-        //             assert(false);
-        //         } else {
-        //             std::cerr << "Operador binário não reconhecido." << std::endl;
-        //             exit(EXIT_FAILURE);
-        //         }
-        //     }
-        //     return {};
-        // }
-
 
         /*
         TODO: documentação
@@ -261,13 +231,23 @@ class Parser {
                         std::cerr << "Expressão inválida." << std::endl;
                         exit(EXIT_FAILURE);
                     }
-                    try_consume(TipoToken::ponto_virgula, "Erro de sintaze. Esperava-se ';' no final da linha.");
+                    try_consume(TipoToken::ponto_virgula, "Erro de sintaxe. Esperava-se ';' no final da linha.");
                 } else {
                     std::cerr << "Declaração inválida. Uma variável precisa de um identificador." << std::endl;
                     exit(EXIT_FAILURE);
                 }
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_var;
+                return statmt;
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::chaves_abre) {
+                consume();
+                auto statmt_scope = m_alloc.alloc<node::StatmtScope>();
+                while (auto statmt = parse_statmt()) {
+                    statmt_scope->statmts_scope.push_back(statmt.value());
+                }
+                try_consume(TipoToken::chaves_fecha, "Erro de sintaxe. Esperava-se '}'.");
+                auto statmt = m_alloc.alloc<node::Statmt>();
+                statmt->variant_statmt = statmt_scope;
                 return statmt;
             } else {
                 return {};
