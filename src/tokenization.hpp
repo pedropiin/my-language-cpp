@@ -18,7 +18,8 @@ enum class TipoToken {
     asterisco,
     barra_div,
     chaves_abre,
-    chaves_fecha
+    chaves_fecha,
+    _if
 };
 
 //TODO: implementar tipos diferentes de enum para
@@ -74,6 +75,9 @@ class Tokenizer {
                         buffer.clear();
                     } else if (buffer.compare("var") == 0) {
                         tokens.push_back({.tipo = TipoToken::var});
+                        buffer.clear();
+                    } else if (buffer.compare("if") == 0) {
+                        tokens.push_back({.tipo = TipoToken::_if});
                         buffer.clear();
                     } else {
                         tokens.push_back({.tipo = TipoToken::identif, .valor = buffer});

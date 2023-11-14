@@ -144,12 +144,15 @@ class Generator {
                         }
                     }
                 }
-                void operator()(const node::StatmtScope* statmt_scope) {
+                void operator()(const node::Scope* scope) {
                     generator->begin_scope();
-                    for (const node::Statmt* statmt : statmt_scope->statmts_scope) {
+                    for (const node::Statmt* statmt : scope->statmts_scope) {
                         generator->generate_statmt(statmt);
                     }
                     generator->end_scope();
+                }
+                void operator()(const node::StatmtIf statmt_if) {
+                    assert(false);
                 }
             };
 

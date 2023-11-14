@@ -5,6 +5,7 @@
 - [ ] diferentes classes enumerate para tokens de diferentes funções
 - [ ] método de print
 - [ ] tipagem em variáveis
+- [ ] comparação numérica
 - [ ] potenciação
 - [ ] mensagens de erro com linha do erro
 - [ ] try - except para erros
