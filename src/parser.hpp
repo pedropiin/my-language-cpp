@@ -197,18 +197,18 @@ class Parser {
             return expr_esquerda;
         }
 
-    /*
-    TODO: documentação
-    */
-    inline std::optional<node::Scope*> parse_scope() {
-                try_consume(TipoToken::chaves_abre, "Erro de sintaxe. Esperava-se um '{' após a expressão.");
-                auto scope = m_alloc.alloc<node::Scope>();
-                while (auto statmt = parse_statmt()) {
-                    scope->statmts_scope.push_back(statmt.value());
-                }
-                try_consume(TipoToken::chaves_fecha, "Erro de sintaxe. Esperava-se '}'.");
-                return scope;
-    }
+        /*
+        TODO: documentação
+        */
+        inline std::optional<node::Scope*> parse_scope() {
+                    try_consume(TipoToken::chaves_abre, "Erro de sintaxe. Esperava-se um '{' após a expressão.");
+                    auto scope = m_alloc.alloc<node::Scope>();
+                    while (auto statmt = parse_statmt()) {
+                        scope->statmts_scope.push_back(statmt.value());
+                    }
+                    try_consume(TipoToken::chaves_fecha, "Erro de sintaxe. Esperava-se '}'.");
+                    return scope;
+        }
 
         /*
         Método responsável por parsear todo o vetor de tokens
@@ -218,6 +218,7 @@ class Parser {
         RETURNS:
         - exit_node (std::optional<node::Exit>): nó atrelado
         à expressão de saída do código.
+        TODO: rever pq ta mto feio
         */
         inline std::optional<node::Statmt*> parse_statmt() {
             if (peek().has_value() && peek().value().tipo == TipoToken::_exit) {
