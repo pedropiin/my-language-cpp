@@ -256,6 +256,8 @@ class Parser {
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_var;
                 return statmt;
+            // } else if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
+                
             } else if (peek().has_value() && peek().value().tipo == TipoToken::chaves_abre) {
                 if (auto scope = parse_scope()) {
                     auto statmt = m_alloc.alloc<node::Statmt>();
@@ -279,7 +281,7 @@ class Parser {
                 if (auto scope = parse_scope()) {
                     statmt_if->scope = scope.value();
                 } else {
-                    std::cerr << "Escoppo inválido para expressão 'if'." << std::endl;
+                    std::cerr << "Escopo inválido para expressão 'if'." << std::endl;
                     exit(EXIT_FAILURE);
                 }
                 auto statmt = m_alloc.alloc<node::Statmt>();
