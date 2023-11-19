@@ -21,9 +21,6 @@ enum class TipoToken {
     chaves_fecha
 };
 
-//TODO: implementar tipos diferentes de enum para
-//tokens de diferentes funções
-
 struct Token {
     TipoToken tipo;
     std::optional<std::string> valor;

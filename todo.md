@@ -8,5 +8,6 @@
 - [ ] potenciação
 - [ ] mensagens de erro com linha do erro
 - [ ] try - except para erros
+- [ ] organizar arquivos em headers
 - [ ] documentação em inglês
 - [ ] refatoração em inglês

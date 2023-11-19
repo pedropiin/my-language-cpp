@@ -65,10 +65,28 @@ namespace node {
         node::Expr* expr;
     };
 
-    struct StatmtVar {
+    // teste
+
+    struct NewVar {
         Token token_identif;
         node::Expr* expr;
     };
+
+    struct ReassVar {
+        Token token_identif;
+        node::Expr *expr;
+    };
+
+    struct StatmtVar {
+        std::variant<node::NewVar*, node::ReassVar*> variant_var;
+    };
+
+    //fim do teste
+
+    // struct StatmtVar {
+    //     Token token_identif;
+    //     node::Expr* expr;
+    // };
 
     struct StatmtScope {
         std::vector<node::Statmt*> statmts_scope;
@@ -218,15 +236,17 @@ class Parser {
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_exit;
                 return statmt;
-
             } else if (peek().has_value() && peek().value().tipo == TipoToken::var) {
                 consume();
                 auto statmt_var = m_alloc.alloc<node::StatmtVar>();
+                auto new_var = m_alloc.alloc<node::NewVar>(); //teste
                 if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
-                    statmt_var->token_identif = consume();
+                    // statmt_var->token_identif = consume(); teste
+                    new_var->token_identif = consume();
                     try_consume(TipoToken::igual, "Erro de sintaxe. Esperava-se '=' após declaração de variável.");
                     if (auto node_expr = parse_expr()) {
-                        statmt_var->expr = node_expr.value();
+                        // statmt_var->expr = node_expr.value(); teste
+                        new_var->expr = node_expr.value();
                     } else {
                         std::cerr << "Expressão inválida." << std::endl;
                         exit(EXIT_FAILURE);
@@ -236,6 +256,25 @@ class Parser {
                     std::cerr << "Declaração inválida. Uma variável precisa de um identificador." << std::endl;
                     exit(EXIT_FAILURE);
                 }
+                statmt_var->variant_var = new_var; //teste
+                auto statmt = m_alloc.alloc<node::Statmt>();
+                statmt->variant_statmt = statmt_var;
+                return statmt;
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
+                auto statmt_var = m_alloc.alloc<node::StatmtVar>();
+                auto reass_var = m_alloc.alloc<node::ReassVar>();
+                // statmt_var->token_identif = consume(); teste
+                reass_var->token_identif = consume();
+                try_consume(TipoToken::igual, "Erro de sintaxe. Esperava-se '=' após variável.");
+                if (auto node_expr = parse_expr()) {
+                    // statmt_var->expr = node_expr.value(); teste
+                    reass_var->expr = node_expr.value();
+                } else {
+                    std::cerr << "Expressão inválida." << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                try_consume(TipoToken::ponto_virgula, "Erro de sintaxe. Esperava-se ';' no final da linha.");
+                statmt_var->variant_var = reass_var; //teste
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_var;
                 return statmt;
