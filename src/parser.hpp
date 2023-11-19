@@ -88,12 +88,17 @@ namespace node {
     //     node::Expr* expr;
     // };
 
-    struct StatmtScope {
+    struct Scope {
         std::vector<node::Statmt*> statmts_scope;
     };
 
+    struct StatmtIf {
+        node::Expr* expr;
+        node::Scope* scope;
+    };
+    
     struct Statmt {
-        std::variant<node::StatmtVar*, node::StatmtExit*, node::StatmtScope*> variant_statmt;
+        std::variant<node::StatmtVar*, node::StatmtExit*, node::Scope*, node::StatmtIf*> variant_statmt;
     };
 
     struct Program {
@@ -101,7 +106,6 @@ namespace node {
     };
 };
 
-//TODO: implementar Token operador dentro das structs de operação binaria
 
 class Parser {
     public:
@@ -212,6 +216,19 @@ class Parser {
         }
 
         /*
+        TODO: documentação
+        */
+        inline std::optional<node::Scope*> parse_scope() {
+                    try_consume(TipoToken::chaves_abre, "Erro de sintaxe. Esperava-se um '{' após a expressão.");
+                    auto scope = m_alloc.alloc<node::Scope>();
+                    while (auto statmt = parse_statmt()) {
+                        scope->statmts_scope.push_back(statmt.value());
+                    }
+                    try_consume(TipoToken::chaves_fecha, "Erro de sintaxe. Esperava-se '}'.");
+                    return scope;
+        }
+
+        /*
         Método responsável por parsear todo o vetor de tokens
         do arquivo fonte, procurando por erros de sintaxe
         e nós para cada uma das entidades necessárias
@@ -219,6 +236,7 @@ class Parser {
         RETURNS:
         - exit_node (std::optional<node::Exit>): nó atrelado
         à expressão de saída do código.
+        TODO: rever pq ta mto feio
         */
         inline std::optional<node::Statmt*> parse_statmt() {
             if (peek().has_value() && peek().value().tipo == TipoToken::_exit) {
@@ -278,15 +296,36 @@ class Parser {
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_var;
                 return statmt;
+            // } else if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
+                
             } else if (peek().has_value() && peek().value().tipo == TipoToken::chaves_abre) {
-                consume();
-                auto statmt_scope = m_alloc.alloc<node::StatmtScope>();
-                while (auto statmt = parse_statmt()) {
-                    statmt_scope->statmts_scope.push_back(statmt.value());
+                if (auto scope = parse_scope()) {
+                    auto statmt = m_alloc.alloc<node::Statmt>();
+                    statmt->variant_statmt = scope.value();
+                    return statmt;
+                } else {
+                    std::cerr << "Escopo inválido.";
+                    exit(EXIT_FAILURE);
                 }
-                try_consume(TipoToken::chaves_fecha, "Erro de sintaxe. Esperava-se '}'.");
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::_if) {
+                consume();
+                try_consume(TipoToken::parenteses_abre, "Esperava-se '(' após expressão 'if'.");
+                auto statmt_if = m_alloc.alloc<node::StatmtIf>();
+                if (auto expr = parse_expr()) {
+                    statmt_if->expr = expr.value();
+                } else {
+                    std::cerr << "Expressão inválida como condição da expressão 'if'." << std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                try_consume(TipoToken::parenteses_fecha, "Erro de sintaxe. Esperava-se ')' ao final da expressão.");
+                if (auto scope = parse_scope()) {
+                    statmt_if->scope = scope.value();
+                } else {
+                    std::cerr << "Escopo inválido para expressão 'if'." << std::endl;
+                    exit(EXIT_FAILURE);
+                }
                 auto statmt = m_alloc.alloc<node::Statmt>();
-                statmt->variant_statmt = statmt_scope;
+                statmt->variant_statmt = statmt_if;
                 return statmt;
             } else {
                 return {};
