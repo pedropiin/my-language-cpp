@@ -1,4 +1,4 @@
-# Install script for directory: /mnt/c/Users/Pedro/desktop/all/dev/projects/my-language-cpp/src
+# Install script for directory: /mnt/c/Users/User/Desktop/all/dev/projects/my-language-cpp/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/mnt/c/Users/Pedro/desktop/all/dev/projects/my-language-cpp/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/mnt/c/Users/User/Desktop/all/dev/projects/my-language-cpp/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

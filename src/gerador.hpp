@@ -145,12 +145,13 @@ class Generator {
                 }
                 void operator()(const node::StatmtVar* statmt_var) {
                     struct VarVisitor {
+                        Generator& generator;
                         void operator()(const node::NewVar* new_var) {
                             if (new_var->token_identif.valor.has_value()) {
-                                if (!generator->m_variables.contains(new_var->token_identif.valor.value())) {
-                                    Variable nova_var_temp = {.stack_pos = generator->m_stack_size};
-                                    generator->m_variables.insert({new_var->token_identif.valor.value(), nova_var_temp}); // apenas guardo posição da variável/valor na stack
-                                    generator->generate_expr(new_var->expr);                                        // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
+                                if (!generator.m_variables.contains(new_var->token_identif.valor.value())) {
+                                    Variable nova_var_temp = {.stack_pos = generator.m_stack_size};
+                                    generator.m_variables.insert({new_var->token_identif.valor.value(), nova_var_temp}); // apenas guardo posição da variável/valor na stack
+                                    generator.generate_expr(new_var->expr);                                        // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
                                 }
                                 else {
                                     std::cerr << "Identificador '" << new_var->token_identif.valor.value() << "' já utilizado." << std::endl;
@@ -160,23 +161,18 @@ class Generator {
                         }
                         void operator()(const node::ReassVar* reass_var) {
                             if (reass_var->token_identif.valor.has_value()) {
-                                
+                                if (generator.m_variables.contains(reass_var->token_identif.valor.value())) {
+                                    generator.generate_expr(reass_var->expr);
+                                    Variable nova_var_temp = {.stack_pos = generator.m_stack_size - 1}; //-1, pois precisamos interpretar a expressão primeiro, para depois darmos novo valor
+                                    generator.m_variables.at(reass_var->token_identif.valor.value()) = nova_var_temp;
+                                } else {
+                                    std::cerr << "Identificador '" << reass_var->token_identif.valor.value() << "' não inicializado." << std::endl;
+                                    exit(EXIT_FAILURE);
+                                }
                             }
                         }
                     };
-                    std::visit(VarVisitor {}, statmt_var->variant_var);
-
-
-                    if (statmt_var->token_identif.valor.has_value()) {
-                        if (!generator.m_variables.contains(statmt_var->token_identif.valor.value())) {
-                            Variable new_var = {.stack_pos = generator.m_stack_size};
-                            generator.m_variables.insert({statmt_var->token_identif.valor.value(), new_var}); // apenas guardo posição da variável/valor na stack
-                            generator.generate_expr(statmt_var->expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
-                        } else {
-                            std::cerr << "Identificador '" << statmt_var->token_identif.valor.value() << "' já utilizado." << std::endl;
-                            exit(EXIT_FAILURE);
-                        }
-                    }
+                    std::visit(VarVisitor {.generator = generator}, statmt_var->variant_var);
                 }
                 void operator()(const node::Scope* scope) {
                     generator.generate_scope(scope);
