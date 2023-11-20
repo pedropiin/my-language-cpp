@@ -21,7 +21,14 @@ class Generator {
         {}
 
         /*
-        TODO: documentação
+        Método responsável por escrever o código em assembly
+        referente aos nós de termos. Assim, implementa um visitor
+        pattern para checar qual tipo de termo está lidando com,
+        e, assim, adaptar a geração de código.
+        PARÂMETROS:
+        - term (const node::Term*): ponteiro para o nó da AST
+        referente ao código que será gerado.
+        RETURNS:
         */
         inline void generate_term(const node::Term* term) {
             struct TermVisitor {
@@ -58,7 +65,14 @@ class Generator {
         }
 
         /*
-        TODO: documentação
+        Método responsável pela geração de código assembly dos
+        nós de expressões gerados pelo parseamento. Implementa
+        um visitor pattern para reconhecer qual tipo de expressão
+        está lidando, e, assim, adaptar a geração de código.
+        PARÂMETROS:
+        - expr (const node::Expr*): ponteiro para o nó da AST
+        que servirá de base para a geração de código
+        RETURNS:
         */
         inline void generate_expr(const node::Expr* expr) {
             struct ExprVisitor {
@@ -76,7 +90,15 @@ class Generator {
         }
 
         /*
-        TODO: documentação
+        Método responsável pela geração de código assembly
+        para os nós de expressões binárias. Implementa um 
+        visitor pattern para adaptar a geração de código
+        conforme o tipo de expressão que está lidando.
+        PARÂMETROS:
+        - bin_expr (const node::BinExpr*): ponteiro para o
+        nó da AST referente à expressão binária que servirá de
+        base para a geração de código.
+        RETURNS:
         */
         inline void generate_bin_expr(const node::BinExpr* bin_expr) {
             struct BinExprVisitor {
@@ -121,7 +143,14 @@ class Generator {
         }
 
         /*
-        TODO: documentação
+        Método responsável por lidar com escopos na geração de 
+        código assembly. Assim, inicia e finaliza um escopo, 
+        enquanto, no processo, chama a geração de código para
+        os statement encontrados no interior do escopo em questão.
+        PARÂMETROS:
+        - scope (const node::Scope*): ponteiro para o nó da AST
+        referente ao escopo que está interpretando.
+        RETURNS:
         */
         inline void generate_scope(const node::Scope* scope) {
             begin_scope();
@@ -132,7 +161,15 @@ class Generator {
         }
 
         /*
-        TODO: documentação
+        Método que gera o código assembly para os diferentes tipos
+        de statements possíveis (checar grammar.md). Implementa
+        um visitor pattern para reconhecer qual tipo de statement
+        dentro do std::variant esta lidando com, e, assim, adaptar
+        a geração de código.
+        PARÂMETROS:
+        - statmt (const node::Statmt*): ponteiro para o nó da AST
+        que servirá de base para a geração de código.
+        RETURNS:
         */
         inline void generate_statmt(const node::Statmt* statmt) {
             struct StatmtVisitor {
@@ -192,14 +229,17 @@ class Generator {
             std::visit(visitor, statmt->variant_statmt);
         }
 
-        /*Função que converte os tokens obtidos pela tokenização
-        no respectivo código em assembly.
+        /*
+        Função base para a geração de código assembly. Para isso,
+        faz uso de um 'for' que atravessa o vetor de nós da AST
+        representando as diversas statements do programa. No final, 
+        escreve a syscall padrão de saída do assembly, caso não
+        seja encontrado a função "exit()" ao longo do código.
         PARÂMETROS:
-        - tokens_file (std::vector<Token>): vetor de tokens lexicais
-        do arquivo .ml
         RETURNS:
         - out (std::string): formato em string de uma stringstream
-        que contêm o código em asm correspondente ao código em ml
+        que contêm o código em assembly correspondente ao código 
+        em .ml.
         */
         inline std::string generate_program() {
             m_out << "global _start\n_start:\n";
@@ -222,7 +262,13 @@ class Generator {
         int m_label_count = 0;
 
         /*
-        TODO: documentação
+        Método que escreve o código para o "push" do valor
+        guardado por um registrador para a stack. No final, 
+        incrementa 1 no valor de m_stack_size.
+        PARÂMETROS:
+        - reg (const std::string&): string que contêm o nome
+        do registrador que se deseja envolver na operação de push.
+        RETURNS:
         */
         inline void push(const std::string& reg) {
             m_out << "    push " << reg << '\n';
@@ -230,7 +276,13 @@ class Generator {
         }
 
         /*
-        TODO: documentação
+        Método que escreve o código para o "pop" de um valor
+        no topo da stack para um registrador. No final, decrementa
+        1 no valor de m_stack_size.
+        PARÂMETROS:
+        - reg (const std::string&): string que contêm o nome
+        do registrador que se deseja envolver na operação de pop.
+        RETURNS:
         */
         inline void pop(const std::string& reg) {
             m_out << "    pop " << reg << '\n';
@@ -238,14 +290,25 @@ class Generator {
         }
 
         /*
-        TODO: documentação
+        Função que representa o início de um escopo. Na prática,
+        apenas salva o número de variáveis do escopo antigo, para
+        ter um ponto de "checkpoint" para quando o escopo novo 
+        for finalizado.
+        PARÂMETROS:
+        RETURNS:
         */
         inline void begin_scope() {
             m_scopes.push_back(m_variables.size());
         }
 
         /*
-        TODO: documentação
+        Função que encerra o escopo atual. Assim, remove as
+        variáveis implementadas nele e atualiza o valor do 
+        ponteiro da stack para "voltar" ao fim do escopo
+        anterior, de modo a ignorar o que foi adicionado no 
+        escopo destruído e permitir sobrescrita.
+        PARÂMETROS:
+        RETURNS:
         */
         inline void end_scope() {
             size_t num_pops = m_variables.size() - m_scopes.back();
@@ -258,7 +321,12 @@ class Generator {
         }
 
         /*
-        TODO: documentação
+        Método que sinaliza no arquivo em assembly o local 
+        da label para a implementação de 'ifs'.
+        PARÂMETROS:
+        RETURNS:
+        - (std::string): string que contêm o número da label
+        nova.
         */
         inline std::string create_label() {
             return "label" + std::to_string(m_label_count++);

@@ -1,6 +1,6 @@
 ## TO DO
 
-- [ ] reassignment de variaveis
+- [X] reassignment de variaveis
 - [ ] comparação numérica
 - [ ] potenciação
 - [ ] método de print

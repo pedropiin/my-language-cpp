@@ -101,11 +101,19 @@ namespace node {
 class Parser {
     public:
         inline Parser(std::vector<Token> tokens) 
-            : m_tokens(std::move(tokens)), m_alloc(1024 * 1024 * 4)
+            : m_tokens(std::move(tokens)), m_alloc(1024 * 1024 * 4) //member initialization list
         {}
 
         /*
-        TODO: documentação
+        Método responsável pelo parseamento dos possíveis termos na 
+        sintaxe da linguagem (checar grammar.md). Assim, realiza as 
+        alocações necessárias para cada tipo através de 'ifs' e checa 
+        procura erros de sintaxe.
+        PARÂMETROS:
+        RETURNS:
+        - term (std::optional<node::Term*>): um std::optional para um
+        ponteiro do nó "Term"que, por sua vez, contêm um std::variant 
+        com os tipos possíveis de termos (checar grammar.md)
         */
         inline std::optional<node::Term*> parse_term() {
             auto term = m_alloc.alloc<node::Term>();
