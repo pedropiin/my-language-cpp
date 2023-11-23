@@ -1,3 +1,0 @@
-/mnt/c/Users/Pedro/desktop/all/dev/projects/my-language-cpp/build/CMakeFiles/rebuild_cache.dir
-/mnt/c/Users/Pedro/desktop/all/dev/projects/my-language-cpp/build/CMakeFiles/edit_cache.dir
-/mnt/c/Users/Pedro/desktop/all/dev/projects/my-language-cpp/build/CMakeFiles/compiler.dir
