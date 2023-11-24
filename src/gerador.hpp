@@ -101,52 +101,102 @@ class Generator {
         RETURNS:
         */
         inline void generate_bin_expr(const node::BinExpr* bin_expr) {
-            struct BinExprVisitor {
-                Generator& generator;
-                void operator()(const node::BinExprSoma* soma) {
-                    generator.generate_expr(soma->lado_esquerdo);
-                    generator.generate_expr(soma->lado_direito);
-                    generator.pop("rax");
-                    generator.pop("rbx");
-                    generator.m_out << "    add rax, rbx\n";
-                    generator.push("rax");
-                }
-                void operator()(const node::BinExprSub* subtracao)
-                {
-                    generator.generate_expr(subtracao->lado_esquerdo);
-                    generator.generate_expr(subtracao->lado_direito);
-                    generator.pop("rax");
-                    generator.pop("rbx");
-                    generator.m_out << "    sub rbx, rax\n";
-                    generator.push("rbx");
-                }
-                void operator()(const node::BinExprMulti* multiplicacao) {
-                    generator.generate_expr(multiplicacao->lado_esquerdo);
-                    generator.generate_expr(multiplicacao->lado_direito);
-                    generator.pop("rax");
-                    generator.pop("rbx");
-                    generator.m_out << "    mul rbx\n";
-                    generator.push("rax");
-                }
-                void operator()(const node::BinExprDiv* divisao) {
-                    generator.generate_expr(divisao->lado_esquerdo);
-                    generator.generate_expr(divisao->lado_direito);
-                    generator.pop("rbx"); 
-                    generator.pop("rax"); 
-                    generator.m_out << "    div rbx\n";
-                    generator.push("rax");
-                }
-                void operator()(const node::BinExprComp* comp) {
-                    generator.generate_expr(comp->lado_esquerdo);
-                    generator.generate_expr(comp->lado_direito);
-                    generator.pop("rbx");
-                    generator.pop("rax");
-                    generator.m_out << "    cmp rbx, rax\n";
-                }
-            };
+            // struct BinExprVisitor {
+            //     Generator& generator;
+            //     void operator()(const node::BinExprSoma* soma) {
+            //         generator.generate_expr(soma->lado_esquerdo);
+            //         generator.generate_expr(soma->lado_direito);
+            //         generator.pop("rax");
+            //         generator.pop("rbx");
+            //         generator.m_out << "    add rax, rbx\n";
+            //         generator.push("rax");
+            //     }
+            //     void operator()(const node::BinExprSub* subtracao)
+            //     {
+            //         generator.generate_expr(subtracao->lado_esquerdo);
+            //         generator.generate_expr(subtracao->lado_direito);
+            //         generator.pop("rax");
+            //         generator.pop("rbx");
+            //         generator.m_out << "    sub rbx, rax\n";
+            //         generator.push("rbx");
+            //     }
+            //     void operator()(const node::BinExprMulti* multiplicacao) {
+            //         generator.generate_expr(multiplicacao->lado_esquerdo);
+            //         generator.generate_expr(multiplicacao->lado_direito);
+            //         generator.pop("rax");
+            //         generator.pop("rbx");
+            //         generator.m_out << "    mul rbx\n";
+            //         generator.push("rax");
+            //     }
+            //     void operator()(const node::BinExprDiv* divisao) {
+            //         generator.generate_expr(divisao->lado_esquerdo);
+            //         generator.generate_expr(divisao->lado_direito);
+            //         generator.pop("rbx"); 
+            //         generator.pop("rax"); 
+            //         generator.m_out << "    div rbx\n";
+            //         generator.push("rax");
+            //     }
+            //     void operator()(const node::BinExprComp* comp) {
+            //         generator.generate_expr(comp->lado_esquerdo);
+            //         generator.generate_expr(comp->lado_direito);
+            //         generator.pop("rbx");
+            //         generator.pop("rax");
+            //         generator.m_out << "    cmp rbx, rax\n";
+            //     }
+            // };
 
-            BinExprVisitor visitor {.generator = *this};
-            std::visit(visitor, bin_expr->variant_bin_expr);
+            // BinExprVisitor visitor {.generator = *this};
+            // std::visit(visitor, bin_expr->variant_bin_expr);
+            switch (bin_expr->token.tipo) {
+                case TipoToken::mais:
+                    generate_expr(bin_expr->lado_esquerdo);
+                    generate_expr(bin_expr->lado_direito);
+                    pop("rax");
+                    pop("rbx");
+                    m_out << "    add rax, rbx\n";
+                    push("rax");
+                    break;
+                case TipoToken::menos:
+                    generate_expr(bin_expr->lado_esquerdo);
+                    generate_expr(bin_expr->lado_direito);
+                    pop("rax");
+                    pop("rbx");
+                    m_out << "    sub rbx, rax\n";
+                    push("rbx");
+                    break;
+                case TipoToken::asterisco:
+                    generate_expr(bin_expr->lado_esquerdo);
+                    generate_expr(bin_expr->lado_direito);
+                    pop("rax");
+                    pop("rbx");
+                    m_out << "    mul rbx\n";
+                    push("rax");
+                    break;
+                case TipoToken::barra_div:
+                    generate_expr(bin_expr->lado_esquerdo);
+                    generate_expr(bin_expr->lado_direito);
+                    pop("rbx");
+                    pop("rax");
+                    m_out << "    div rbx\n";
+                    push("rax");
+                    break;
+                case TipoToken::maior:
+                    generate_expr(bin_expr->lado_esquerdo);
+                    generate_expr(bin_expr->lado_direito);
+                    pop("rbx");
+                    pop("rax");
+                    m_out << "    cmp rbx, rax\n";
+                    break;
+                case TipoToken::menor:
+                    assert(false);
+                    break;
+                case TipoToken::maior_igual:
+                    assert(false);
+                    break;
+                case TipoToken::menor_igual:
+                    assert(false);
+                    break;
+            }
         }
 
         /*
@@ -222,15 +272,48 @@ class Generator {
                     generator.generate_scope(scope);
                 }
                 void operator()(const node::StatmtIf* statmt_if) {
-                    generator.generate_expr(statmt_if->expr);
-                    // TODO: adicionar ponteiro opcional como parametro de generate_expr e generate_bin_expr. assim, altero valor do char apenas na geração de codigo da comparação
+                    //teste
+                    struct StatmtIfVisitor {
+                        Generator& generator;
+                        std::string label;
+                        void operator()(const node::Term* term) {
+                            assert(false);
+                        }
+                        void operator()(const node::BinExpr* bin_expr) {
+                            switch (bin_expr->token.tipo) {
+                                case TipoToken::mais:
+                                case TipoToken::menos:
+                                case TipoToken::asterisco:
+                                case TipoToken::barra_div:
+                                    generator.m_out << "    jz " << label << '\n';
+                                    break;
+                                case TipoToken::maior:
+                                    generator.m_out << "    jle " << label << '\n';
+                                    break;
+                                case TipoToken::menor:
+                                    generator.m_out << "    jge " << label << '\n';
+                                    break;
+                                case TipoToken::maior_igual:
+                                    generator.m_out << "    jl " << label << '\n';
+                                    break;
+                                case TipoToken::menor_igual:
+                                    generator.m_out << "    jg " << label << '\n';
+                                    break;
+                            }
+                        }
+                    };
                     std::string label = generator.create_label();
-                    generator.m_out << "    jg " << label << "\n";
+                    generator.generate_expr(statmt_if->expr);
+                    std::visit(StatmtIfVisitor {.generator = generator, .label = label}, statmt_if->expr->variant_expr);
+                    //teste
                     generator.generate_scope(statmt_if->scope);
                     generator.m_out << label << ":\n";
+                    // std::string label = generator.create_label();
+                    // generator.m_out << "    jg " << label << "\n";
+                    // generator.generate_scope(statmt_if->scope);
+                    // generator.m_out << label << ":\n";
                 }
             };
-
             StatmtVisitor visitor {.generator = *this};
             std::visit(visitor, statmt->variant_statmt);
         }

@@ -1,4 +1,4 @@
-var x = 20;
+var x = 10;
 var y = 5;
 if (x > 10) {
     x = x * y;

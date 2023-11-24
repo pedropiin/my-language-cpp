@@ -37,38 +37,41 @@ namespace node {
         std::variant<node::Term*, node::BinExpr*> variant_expr;
     };
 
-    struct BinExprSoma {
-        node::Expr* lado_esquerdo;
-        node::Expr* lado_direito;
-    };
+    // struct BinExprSoma {
+    //     node::Expr* lado_esquerdo;
+    //     node::Expr* lado_direito;
+    // };
 
-    struct BinExprSub {
-        node::Expr* lado_esquerdo;
-        node::Expr* lado_direito;
-    };
+    // struct BinExprSub {
+    //     node::Expr* lado_esquerdo;
+    //     node::Expr* lado_direito;
+    // };
 
-    struct BinExprMulti {
-        node::Expr* lado_esquerdo;
-        node::Expr* lado_direito;
-    };
+    // struct BinExprMulti {
+    //     node::Expr* lado_esquerdo;
+    //     node::Expr* lado_direito;
+    // };
 
-    struct BinExprDiv {
-        node::Expr* lado_esquerdo;
-        node::Expr* lado_direito;
-    };
+    // struct BinExprDiv {
+    //     node::Expr* lado_esquerdo;
+    //     node::Expr* lado_direito;
+    // };
 
-    // a = >
-    // b = <
-    // c = >=
-    // d = <=
-    struct BinExprComp { //maior
-        char valor; 
-        node::Expr* lado_esquerdo;
-        node::Expr* lado_direito;
-    };
+    // // a = > --- b = < --- c = >= --- d = <=
+    // struct BinExprComp {
+    //     char valor; 
+    //     node::Expr* lado_esquerdo;
+    //     node::Expr* lado_direito;
+    // };
+
+    // struct BinExpr {
+    //     std::variant<node::BinExprSoma*, node::BinExprSub*, node::BinExprMulti*, node::BinExprDiv*, node::BinExprComp*> variant_bin_expr;
+    // };
 
     struct BinExpr {
-        std::variant<node::BinExprSoma*, node::BinExprSub*, node::BinExprMulti*, node::BinExprDiv*, node::BinExprComp*> variant_bin_expr;
+        Token token;
+        node::Expr* lado_esquerdo;
+        node::Expr* lado_direito;
     };
 
     struct StatmtExit {
@@ -187,52 +190,70 @@ class Parser {
                 switch (operador.tipo) {
                     case TipoToken::mais:
                         {
-                            auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
-                            bin_expr_soma->lado_esquerdo = expr_esquerda_temp;
-                            bin_expr_soma->lado_direito = expr_direita.value();
-                            bin_expr->variant_bin_expr = bin_expr_soma;
+                            // auto bin_expr_soma = m_alloc.alloc<node::BinExprSoma>();
+                            // bin_expr_soma->lado_esquerdo = expr_esquerda_temp;
+                            // bin_expr_soma->lado_direito = expr_direita.value();
+                            // bin_expr->variant_bin_expr = bin_expr_soma;
+                            bin_expr->token = {.tipo = TipoToken::mais};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                     case TipoToken::menos:
                         {
-                            auto bin_expr_sub = m_alloc.alloc<node::BinExprSub>();
-                            bin_expr_sub->lado_esquerdo = expr_esquerda_temp;
-                            bin_expr_sub->lado_direito = expr_direita.value();
-                            bin_expr->variant_bin_expr = bin_expr_sub;
+                            // auto bin_expr_sub = m_alloc.alloc<node::BinExprSub>();
+                            // bin_expr_sub->lado_esquerdo = expr_esquerda_temp;
+                            // bin_expr_sub->lado_direito = expr_direita.value();
+                            // bin_expr->variant_bin_expr = bin_expr_sub;
+                            bin_expr->token = {.tipo = TipoToken::menos};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                     case TipoToken::asterisco:
                         {
-                            auto bin_expr_multi = m_alloc.alloc<node::BinExprMulti>();
-                            bin_expr_multi->lado_esquerdo = expr_esquerda_temp;
-                            bin_expr_multi->lado_direito = expr_direita.value();
-                            bin_expr->variant_bin_expr = bin_expr_multi;
+                            // auto bin_expr_multi = m_alloc.alloc<node::BinExprMulti>();
+                            // bin_expr_multi->lado_esquerdo = expr_esquerda_temp;
+                            // bin_expr_multi->lado_direito = expr_direita.value();
+                            // bin_expr->variant_bin_expr = bin_expr_multi;
+                            bin_expr->token = {.tipo = TipoToken::asterisco};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                     case TipoToken::barra_div:
                         {
-                            auto bin_expr_div = m_alloc.alloc<node::BinExprDiv>();
-                            bin_expr_div->lado_esquerdo = expr_esquerda_temp;
-                            bin_expr_div->lado_direito = expr_direita.value();
-                            bin_expr->variant_bin_expr = bin_expr_div;
+                            // auto bin_expr_div = m_alloc.alloc<node::BinExprDiv>();
+                            // bin_expr_div->lado_esquerdo = expr_esquerda_temp;
+                            // bin_expr_div->lado_direito = expr_direita.value();
+                            // bin_expr->variant_bin_expr = bin_expr_div;
+                            bin_expr->token = {.tipo = TipoToken::barra_div};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                     case TipoToken::maior:
                         {
-                            auto bin_expr_maior = m_alloc.alloc<node::BinExprComp>();
-                            bin_expr_maior->lado_esquerdo = expr_esquerda_temp;
-                            bin_expr_maior->lado_direito = expr_direita.value();
-                            bin_expr_maior->valor = 'a';
-                            bin_expr->variant_bin_expr = bin_expr_maior;
+                            // auto bin_expr_maior = m_alloc.alloc<node::BinExprComp>();
+                            // bin_expr_maior->lado_esquerdo = expr_esquerda_temp;
+                            // bin_expr_maior->lado_direito = expr_direita.value();
+                            // bin_expr_maior->valor = 'a';
+                            // bin_expr->variant_bin_expr = bin_expr_maior;
+                            bin_expr->token = {.tipo = TipoToken::maior};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                     case TipoToken::menor:
                         {
-                            auto bin_expr_menor = m_alloc.alloc<node::BinExprComp>();
-                            bin_expr_menor->lado_esquerdo = expr_esquerda_temp;
-                            bin_expr_menor->lado_direito = expr_direita.value();
-                            bin_expr_menor->valor = 'b';
-                            bin_expr->variant_bin_expr = bin_expr_menor;
+                            // auto bin_expr_menor = m_alloc.alloc<node::BinExprComp>();
+                            // bin_expr_menor->lado_esquerdo = expr_esquerda_temp;
+                            // bin_expr_menor->lado_direito = expr_direita.value();
+                            // bin_expr_menor->valor = 'b';
+                            // bin_expr->variant_bin_expr = bin_expr_menor;
+                            bin_expr->token = {.tipo = TipoToken::menor};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                     case TipoToken::maior_igual:
