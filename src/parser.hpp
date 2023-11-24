@@ -57,8 +57,18 @@ namespace node {
         node::Expr* lado_direito;
     };
 
+    // a = >
+    // b = <
+    // c = >=
+    // d = <=
+    struct BinExprComp { //maior
+        char valor; 
+        node::Expr* lado_esquerdo;
+        node::Expr* lado_direito;
+    };
+
     struct BinExpr {
-        std::variant<node::BinExprSoma*, node::BinExprSub*, node::BinExprMulti*, node::BinExprDiv*> variant_bin_expr;
+        std::variant<node::BinExprSoma*, node::BinExprSub*, node::BinExprMulti*, node::BinExprDiv*, node::BinExprComp*> variant_bin_expr;
     };
 
     struct StatmtExit {
@@ -173,8 +183,7 @@ class Parser {
                 } 
                 auto bin_expr = m_alloc.alloc<node::BinExpr>();
                 auto expr_esquerda_temp = m_alloc.alloc<node::Expr>();
-                expr_esquerda_temp->variant_expr = expr_esquerda->variant_expr; 
-
+                expr_esquerda_temp->variant_expr = expr_esquerda->variant_expr;
                 switch (operador.tipo) {
                     case TipoToken::mais:
                         {
@@ -206,6 +215,34 @@ class Parser {
                             bin_expr_div->lado_esquerdo = expr_esquerda_temp;
                             bin_expr_div->lado_direito = expr_direita.value();
                             bin_expr->variant_bin_expr = bin_expr_div;
+                        }
+                        break;
+                    case TipoToken::maior:
+                        {
+                            auto bin_expr_maior = m_alloc.alloc<node::BinExprComp>();
+                            bin_expr_maior->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr_maior->lado_direito = expr_direita.value();
+                            bin_expr_maior->valor = 'a';
+                            bin_expr->variant_bin_expr = bin_expr_maior;
+                        }
+                        break;
+                    case TipoToken::menor:
+                        {
+                            auto bin_expr_menor = m_alloc.alloc<node::BinExprComp>();
+                            bin_expr_menor->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr_menor->lado_direito = expr_direita.value();
+                            bin_expr_menor->valor = 'b';
+                            bin_expr->variant_bin_expr = bin_expr_menor;
+                        }
+                        break;
+                    case TipoToken::maior_igual:
+                        {
+                            assert(false);
+                        }
+                        break;
+                    case TipoToken::menor_igual:
+                        {
+                            assert(false);
                         }
                         break;
                 }

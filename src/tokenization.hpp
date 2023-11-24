@@ -19,7 +19,11 @@ enum class TipoToken {
     barra_div,
     chaves_abre,
     chaves_fecha,
-    _if
+    _if,
+    maior, 
+    menor,
+    maior_igual,
+    menor_igual
 };
 
 struct Token {
@@ -29,14 +33,22 @@ struct Token {
 
 inline std::optional<int> bin_prec(TipoToken tipo) {
     switch(tipo) {
+        case TipoToken::maior:
+            return 0;
+        case TipoToken::menor:
+            return 0;
+        case TipoToken::maior_igual:
+            return 0;
+        case TipoToken::menor_igual:
+            return 0;
         case TipoToken::mais:
-            return 0;
+            return 1;
         case TipoToken::menos:
-            return 0;
+            return 1;
         case TipoToken::asterisco:
-            return 1;
+            return 2;
         case TipoToken::barra_div:
-            return 1;
+            return 2;
         default:
             return {};
     }
@@ -102,6 +114,22 @@ class Tokenizer {
                 } else if (peek().value() == '/') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::barra_div});
+                } else if (peek().value() == '>') {
+                    consume();
+                    if (peek().value() == '=') {
+                        consume();
+                        tokens.push_back({.tipo = TipoToken::maior_igual});
+                    } else {
+                        tokens.push_back({.tipo = TipoToken::maior});
+                    }
+                } else if (peek().value() == '<') {
+                    consume();
+                    if (peek().value() == '=') {
+                        consume();
+                        tokens.push_back({.tipo = TipoToken::menor_igual});
+                    } else {
+                        tokens.push_back({.tipo = TipoToken::menor});
+                    }
                 } else if (peek().value() == '(') {
                     consume();
                     tokens.push_back({.tipo = TipoToken::parenteses_abre});

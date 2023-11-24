@@ -136,6 +136,13 @@ class Generator {
                     generator.m_out << "    div rbx\n";
                     generator.push("rax");
                 }
+                void operator()(const node::BinExprComp* comp) {
+                    generator.generate_expr(comp->lado_esquerdo);
+                    generator.generate_expr(comp->lado_direito);
+                    generator.pop("rbx");
+                    generator.pop("rax");
+                    generator.m_out << "    cmp rbx, rax\n";
+                }
             };
 
             BinExprVisitor visitor {.generator = *this};
@@ -186,8 +193,8 @@ class Generator {
                         void operator()(const node::NewVar* new_var) {
                             if (new_var->token_identif.valor.has_value()) {
                                 if (!generator.m_variables.contains(new_var->token_identif.valor.value())) {
-                                    Variable nova_var_temp = {.stack_pos = generator.m_stack_size};
-                                    generator.m_variables.insert({new_var->token_identif.valor.value(), nova_var_temp}); // apenas guardo posição da variável/valor na stack
+                                    Variable var_substitu = {.stack_pos = generator.m_stack_size};
+                                    generator.m_variables.insert({new_var->token_identif.valor.value(), var_substitu}); // apenas guardo posição da variável/valor na stack
                                     generator.generate_expr(new_var->expr);                                        // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
                                 }
                                 else {
@@ -200,8 +207,8 @@ class Generator {
                             if (reass_var->token_identif.valor.has_value()) {
                                 if (generator.m_variables.contains(reass_var->token_identif.valor.value())) {
                                     generator.generate_expr(reass_var->expr);
-                                    Variable nova_var_temp = {.stack_pos = generator.m_stack_size - 1}; //-1, pois precisamos interpretar a expressão primeiro, para depois darmos novo valor
-                                    generator.m_variables.at(reass_var->token_identif.valor.value()) = nova_var_temp;
+                                    Variable var_substitu = {.stack_pos = generator.m_stack_size - 1}; //-1, pois interpretamos a expressão primeiro. Assim, depois da expressão, a variável encontra-se em penúltimo lugar na stack
+                                    generator.m_variables.at(reass_var->token_identif.valor.value()) = var_substitu;
                                 } else {
                                     std::cerr << "Identificador '" << reass_var->token_identif.valor.value() << "' não inicializado." << std::endl;
                                     exit(EXIT_FAILURE);
@@ -216,10 +223,9 @@ class Generator {
                 }
                 void operator()(const node::StatmtIf* statmt_if) {
                     generator.generate_expr(statmt_if->expr);
-                    generator.pop("rax");
+                    // TODO: adicionar ponteiro opcional como parametro de generate_expr e generate_bin_expr. assim, altero valor do char apenas na geração de codigo da comparação
                     std::string label = generator.create_label();
-                    generator.m_out << "    test rax, rax\n";
-                    generator.m_out << "    jz " << label << "\n";
+                    generator.m_out << "    jg " << label << "\n";
                     generator.generate_scope(statmt_if->scope);
                     generator.m_out << label << ":\n";
                 }

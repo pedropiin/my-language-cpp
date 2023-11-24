@@ -1,21 +1,18 @@
 global _start
 _start:
-    mov rax, 1
-    push rax
     mov rax, 20
     push rax
-    push QWORD [rsp + 8]
-    pop rax
-    test rax, rax
-    jz label0
-    push QWORD [rsp + 8]
-    push QWORD [rsp + 8]
-    mov rax, 15
+    mov rax, 5
     push rax
-    pop rax
+    push QWORD [rsp + 8]
+    mov rax, 10
+    push rax
     pop rbx
-    add rax, rbx
-    push rax
+    pop rax
+    cmp rbx, rax
+    jg label0
+    push QWORD [rsp + 8]
+    push QWORD [rsp + 8]
     pop rax
     pop rbx
     mul rbx

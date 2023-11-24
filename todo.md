@@ -1,7 +1,10 @@
 ## TO DO
 
 - [X] reassignment de variaveis
+- [ ] otimização assembly
+- [ ] array
 - [ ] comparação numérica
+- [ ] booleanos
 - [ ] potenciação
 - [ ] método de print
 - [ ] comentários

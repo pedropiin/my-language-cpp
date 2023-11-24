@@ -1,6 +1,6 @@
-var x = 1;
-var y = 20;
-if (x) {
-    x = x * (y + 15);
+var x = 20;
+var y = 5;
+if (x > 10) {
+    x = x * y;
 }
 exit (x);
