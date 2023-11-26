@@ -50,6 +50,7 @@ class Generator {
                         endereço desejado.
                         */
                         offset << "QWORD [rsp + " << (generator.m_stack_size - var.stack_pos - 1) * 8 << "]"; //stack e registrador %rsp crescem pra baixo. 
+                        std::cout << "m_stack_size é: " << generator.m_stack_size << "\nstack_pos da var é: " << var.stack_pos << "\n";
                         generator.push(offset.str());
                     } else {
                         std::cerr << "Identificador '" << term_identif->token_identif.valor.value() << "' não inicializado." << std::endl;
@@ -256,8 +257,11 @@ class Generator {
                         void operator()(const node::ReassVar* reass_var) {
                             if (reass_var->token_identif.valor.has_value()) {
                                 if (generator.m_variables.contains(reass_var->token_identif.valor.value())) {
+                                    auto var_original = generator.m_variables.find(reass_var->token_identif.valor.value());
                                     generator.generate_expr(reass_var->expr);
-                                    Variable var_substitu = {.stack_pos = generator.m_stack_size - 1}; //-1, pois interpretamos a expressão primeiro. Assim, depois da expressão, a variável encontra-se em penúltimo lugar na stack
+                                    std::cout << generator.m_stack_size << std::endl;
+                                    std::cout << var_original->second.stack_pos << std::endl;
+                                    Variable var_substitu = {.stack_pos = generator.m_stack_size - var_original->second.stack_pos - 1}; //-1, pois interpretamos a expressão primeiro. Assim, depois da expressão, a variável encontra-se em penúltimo lugar na stack
                                     generator.m_variables.at(reass_var->token_identif.valor.value()) = var_substitu;
                                 } else {
                                     std::cerr << "Identificador '" << reass_var->token_identif.valor.value() << "' não inicializado." << std::endl;
