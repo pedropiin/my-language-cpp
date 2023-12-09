@@ -401,6 +401,7 @@ class Generator {
         */
         inline void end_scope() {
             size_t num_pops = m_variables.size() - m_scopes.back();
+            std::cout << "num_pops = " << num_pops << std::endl;
             m_out << "    add rsp, " << num_pops * 8 << "\n";
             m_stack_size -= num_pops;
             for (int i = 0; i < num_pops; i ++) {

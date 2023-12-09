@@ -1,6 +1,7 @@
-var x = 10;
-var y = 5;
-if (x > 10) {
-    x = x * y;
+var x = 1;
+var y = 10;
+var z = 6;
+{
+    var a = 5;
 }
-exit (x);
+exit(x);
