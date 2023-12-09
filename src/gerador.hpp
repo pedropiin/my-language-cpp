@@ -245,7 +245,7 @@ class Generator {
                                 if (!generator.m_variables.contains(new_var->token_identif.valor.value())) {
                                     Variable var_substitu = {.stack_pos = generator.m_stack_size};
                                     generator.m_variables.insert({new_var->token_identif.valor.value(), var_substitu}); // apenas guardo posição da variável/valor na stack
-                                    generator.generate_expr(new_var->expr);                                        // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
+                                    generator.generate_expr(new_var->expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
                                 }
                                 else {
                                     std::cerr << "Identificador '" << new_var->token_identif.valor.value() << "' já utilizado." << std::endl;
@@ -258,6 +258,7 @@ class Generator {
                                 if (generator.m_variables.contains(reass_var->token_identif.valor.value())) {
                                     generator.generate_expr(reass_var->expr);
                                     Variable var_substitu = {.stack_pos = generator.m_stack_size - 1}; //-1, pois interpretamos a expressão primeiro. Assim, depois da expressão, a variável encontra-se em penúltimo lugar na stack
+                                    
                                     generator.m_variables.at(reass_var->token_identif.valor.value()) = var_substitu;
                                 } else {
                                     std::cerr << "Identificador '" << reass_var->token_identif.valor.value() << "' não inicializado." << std::endl;

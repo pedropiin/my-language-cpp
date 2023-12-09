@@ -37,10 +37,10 @@ inline std::optional<int> bin_prec(TipoToken tipo) {
             return 0;
         case TipoToken::menor:
             return 0;
-        // case TipoToken::maior:
-        //     return 0;
-        // case TipoToken::menor:
-        //     return 0;
+        case TipoToken::maior_igual:
+            return 0;
+        case TipoToken::menor_igual:
+            return 0;
         case TipoToken::mais:
             return 1;
         case TipoToken::menos:
