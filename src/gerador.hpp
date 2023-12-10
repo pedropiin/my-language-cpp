@@ -39,7 +39,8 @@ class Generator {
                 }
                 void operator()(const node::TermIdentif* term_identif) {
                     if (generator.m_variables.contains(term_identif->token_identif.valor.value())) {
-                        auto& var = generator.m_variables.at(term_identif->token_identif.valor.value());
+                        std::vector<Variable> aparicoes = generator.m_variables.at(term_identif->token_identif.valor.value());
+                        auto &var = aparicoes.back();
                         std::stringstream offset;
                         /*
                         A stack é organizada para que cada elemento tenha um tamanho de 8 bytes. Assim, usamos o operador
@@ -244,7 +245,9 @@ class Generator {
                             if (new_var->token_identif.valor.has_value()) {
                                 if (!generator.m_variables.contains(new_var->token_identif.valor.value())) {
                                     Variable var_substitu = {.stack_pos = generator.m_stack_size};
-                                    generator.m_variables.insert({new_var->token_identif.valor.value(), var_substitu}); // apenas guardo posição da variável/valor na stack
+                                    std::vector<Variable> aparicoes;
+                                    aparicoes.push_back(var_substitu);
+                                    generator.m_variables.insert({new_var->token_identif.valor.value(), aparicoes}); // apenas guardo posição da variável/valor na stack
                                     generator.generate_expr(new_var->expr); // após identificador encontramos uma expressão, seja essa um inteiro ou otura variável
                                 }
                                 else {
@@ -258,8 +261,9 @@ class Generator {
                                 if (generator.m_variables.contains(reass_var->token_identif.valor.value())) {
                                     generator.generate_expr(reass_var->expr);
                                     Variable var_substitu = {.stack_pos = generator.m_stack_size - 1}; //-1, pois interpretamos a expressão primeiro. Assim, depois da expressão, a variável encontra-se em penúltimo lugar na stack
-                                    
-                                    generator.m_variables.at(reass_var->token_identif.valor.value()) = var_substitu;
+                                    generator.m_variables.at(reass_var->token_identif.valor.value()).push_back(var_substitu);
+                                    // generator.m_variables.insert({reass_var->token_identif.valor.value(), var_substitu}); //teste
+                                    // generator.m_variables.at(reass_var->token_identif.valor.value()) = var_substitu;
                                 } else {
                                     std::cerr << "Identificador '" << reass_var->token_identif.valor.value() << "' não inicializado." << std::endl;
                                     exit(EXIT_FAILURE);
@@ -347,8 +351,10 @@ class Generator {
         const node::Program m_program;
         std::stringstream m_out;
         size_t m_stack_size = 0;
-        std::map<std::string, Variable> m_variables;
-        std::vector<size_t> m_scopes;
+        std::map<std::string, std::vector<Variable>> m_variables;
+        // std::vector<size_t> m_scopes;
+        std::vector<std::tuple<size_t, std::vector<int>>> m_scopes;
+        std::vector<int> m_num_aparicoes;
         int m_label_count = 0;
 
         /*
@@ -388,7 +394,12 @@ class Generator {
         RETURNS:
         */
         inline void begin_scope() {
-            m_scopes.push_back(m_variables.size());
+            std::vector<int> vetor_aparicoes;
+            for (std::map<std::string, std::vector<Variable>>::iterator it = m_variables.begin(); it != m_variables.end(); ++it) {
+                vetor_aparicoes.push_back(it->second.size());
+            }
+            std::tuple<size_t, std::vector<int>> tupla(m_variables.size(), vetor_aparicoes);
+            m_scopes.push_back(tupla);
         }
 
         /*
@@ -401,13 +412,22 @@ class Generator {
         RETURNS:
         */
         inline void end_scope() {
-            size_t num_pops = m_variables.size() - m_scopes.back();
-            std::cout << "num_pops = " << num_pops << std::endl;
+            size_t num_pops = m_variables.size() - get<0>(m_scopes.back());
             m_out << "    add rsp, " << num_pops * 8 << "\n";
             m_stack_size -= num_pops;
+
             for (int i = 0; i < num_pops; i ++) {
                 m_variables.erase(m_variables.rbegin()->first);
             }
+
+            int i = 0;
+            for (std::map<std::string, std::vector<Variable>>::iterator it = m_variables.begin(); it != m_variables.end(); ++it) {
+                while (it->second.size() > get<1>(m_scopes.at(0)).at(i)) {
+                    it->second.pop_back();
+                }
+                i++;
+            }
+            
             m_scopes.pop_back();
         }
 

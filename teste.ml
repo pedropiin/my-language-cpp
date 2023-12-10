@@ -1,8 +1,11 @@
-var x = 10;
-var y = 6;
-
-if (x > 10) {
-    x = x * y;
-
+var x = 1;
+var y = 2;
+var z = 10;
+{
+    x = 4;
+    y = 5;
+    z = 8;
+    y = x * z;
 }
-exit(y);
+var a = 60;
+exit(z);
