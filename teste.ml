@@ -1,11 +1,13 @@
-var x = 1;
-var y = 2;
-var z = 10;
+var x = 15;
 {
-    x = 4;
-    y = 5;
-    z = 8;
-    y = x * z;
+    var a = 10;
+    {
+        var b = 11;
+        {
+            var c = 14;
+        }
+        exit(b);
+    }
 }
-var a = 60;
-exit(z);
+var b = 9;
+exit(b);
