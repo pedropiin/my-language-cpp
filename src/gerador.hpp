@@ -58,6 +58,7 @@ class Generator {
                         dado que ali está. Portanto, multiplicamos por 8 para "descer" o número correto de bytes até o
                         endereço desejado.
                         */
+                        std::cout << "stack_size: " << generator.m_stack_size << " var: " << term_identif->token_identif.valor.value() << " pos na stack: " << var.stack_pos << std::endl;
                         offset << "QWORD [rsp + " << (generator.m_stack_size - var.stack_pos - 1) * 8 << "]"; // stack e registrador %rsp crescem pra baixo.
                         generator.push(offset.str());
                     } else {
@@ -190,20 +191,14 @@ class Generator {
                     push("rax");
                     break;
                 case TipoToken::maior:
+                case TipoToken::menor:
+                case TipoToken::maior_igual:
+                case TipoToken::menor_igual:
                     generate_expr(bin_expr->lado_esquerdo);
                     generate_expr(bin_expr->lado_direito);
                     pop("rbx");
                     pop("rax");
-                    m_out << "    cmp rbx, rax\n";
-                    break;
-                case TipoToken::menor:
-                    assert(false);
-                    break;
-                case TipoToken::maior_igual:
-                    assert(false);
-                    break;
-                case TipoToken::menor_igual:
-                    assert(false);
+                    m_out << "    cmp rax, rbx\n";
                     break;
             }
         }
@@ -266,7 +261,7 @@ class Generator {
                             if (reass_var->token_identif.valor.has_value()) {
                                 int contem = 0;
                                 int i_og_scope;
-                                for (int i = 0; i < generator.m_scopes.size(); i++) {
+                                for (int i = 0; i < generator.num_scopes; i++) {
                                     if (generator.m_scopes.at(i).contains(reass_var->token_identif.valor.value())) {
                                         contem = 1;
                                         i_og_scope = i;
@@ -276,11 +271,12 @@ class Generator {
                                 if (contem == 1) {
                                     generator.generate_expr(reass_var->expr);
                                     Variable var_substitu = {.stack_pos = generator.m_stack_size - 1};
-                                    if (i_og_scope == generator.num_scopes - 1) { // Variável foi criada no escopo atual
-                                        generator.m_scopes.back()[reass_var->token_identif.valor.value()] = var_substitu;
-                                    } else { // Variável foi criada em um escopo anterior
-                                        generator.m_scopes.back().insert({reass_var->token_identif.valor.value(), var_substitu});
-                                    }
+                                    generator.m_scopes.at(i_og_scope)[reass_var->token_identif.valor.value()] = var_substitu;
+                                    // if (i_og_scope == generator.num_scopes - 1) { // Variável foi criada no escopo atual
+                                    //     generator.m_scopes.back()[reass_var->token_identif.valor.value()] = var_substitu;
+                                    // } else { // Variável foi criada em um escopo anterior
+                                    //     generator.m_scopes.back().insert({reass_var->token_identif.valor.value(), var_substitu});
+                                    // }
                                 } else {
                                     std::cerr << "Identificador '" << reass_var->token_identif.valor.value() << "' não inicializado." << std::endl;
                                     exit(EXIT_FAILURE);
@@ -298,7 +294,9 @@ class Generator {
                         Generator& generator;
                         std::string label;
                         void operator()(const node::Term* term) {
-                            assert(false);
+                            generator.pop("rax");
+                            generator.m_out << "    cmp rax, 0\n";
+                            generator.m_out << "    jle " << label << '\n';
                         }
                         void operator()(const node::BinExpr* bin_expr) {
                             switch (bin_expr->token.tipo) {
@@ -309,6 +307,7 @@ class Generator {
                                     generator.m_out << "    jz " << label << '\n';
                                     break;
                                 case TipoToken::maior:
+                                    std::cout << generator.m_stack_size << std::endl;
                                     generator.m_out << "    jle " << label << '\n';
                                     break;
                                 case TipoToken::menor:
@@ -326,13 +325,8 @@ class Generator {
                     std::string label = generator.create_label();
                     generator.generate_expr(statmt_if->expr);
                     std::visit(StatmtIfVisitor {.generator = generator, .label = label}, statmt_if->expr->variant_expr);
-                    //teste
                     generator.generate_scope(statmt_if->scope);
                     generator.m_out << label << ":\n";
-                    // std::string label = generator.create_label();
-                    // generator.m_out << "    jg " << label << "\n";
-                    // generator.generate_scope(statmt_if->scope);
-                    // generator.m_out << label << ":\n";
                 }
             };
             StatmtVisitor visitor {.generator = *this};
@@ -425,7 +419,7 @@ class Generator {
         RETURNS:
         */
         inline void end_scope() {
-            size_t num_pops = m_scopes.back().size(); //Número de variáveis antes do escopo
+            size_t num_pops = m_scopes.back().size(); //Número de variáveis adicionadas no escopo
             m_out << "    add rsp, " << num_pops * 8 << "\n";
             m_stack_size -= num_pops;
             m_scopes.pop_back();

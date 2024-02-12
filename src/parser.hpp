@@ -258,12 +258,16 @@ class Parser {
                         break;
                     case TipoToken::maior_igual:
                         {
-                            assert(false);
+                            bin_expr->token = {.tipo = TipoToken::maior_igual};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                     case TipoToken::menor_igual:
                         {
-                            assert(false);
+                            bin_expr->token = {.tipo = TipoToken::menor_igual};
+                            bin_expr->lado_esquerdo = expr_esquerda_temp;
+                            bin_expr->lado_direito = expr_direita.value();
                         }
                         break;
                 }

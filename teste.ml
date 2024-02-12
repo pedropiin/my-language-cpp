@@ -1,13 +1,6 @@
-var x = 15;
-{
-    var a = 10;
-    {
-        var b = 11;
-        {
-            var c = 14;
-        }
-        exit(b);
-    }
+var x = 10;
+var y = 20; 
+if (x + y > 50) {
+    x = 100;
 }
-var b = 9;
-exit(b);
+exit(x);
