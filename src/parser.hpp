@@ -37,37 +37,6 @@ namespace node {
         std::variant<node::Term*, node::BinExpr*> variant_expr;
     };
 
-    // struct BinExprSoma {
-    //     node::Expr* lado_esquerdo;
-    //     node::Expr* lado_direito;
-    // };
-
-    // struct BinExprSub {
-    //     node::Expr* lado_esquerdo;
-    //     node::Expr* lado_direito;
-    // };
-
-    // struct BinExprMulti {
-    //     node::Expr* lado_esquerdo;
-    //     node::Expr* lado_direito;
-    // };
-
-    // struct BinExprDiv {
-    //     node::Expr* lado_esquerdo;
-    //     node::Expr* lado_direito;
-    // };
-
-    // // a = > --- b = < --- c = >= --- d = <=
-    // struct BinExprComp {
-    //     char valor; 
-    //     node::Expr* lado_esquerdo;
-    //     node::Expr* lado_direito;
-    // };
-
-    // struct BinExpr {
-    //     std::variant<node::BinExprSoma*, node::BinExprSub*, node::BinExprMulti*, node::BinExprDiv*, node::BinExprComp*> variant_bin_expr;
-    // };
-
     struct BinExpr {
         Token token;
         node::Expr* lado_esquerdo;
@@ -300,7 +269,7 @@ class Parser {
         TODO: rever pq ta mto feio
         */
         inline std::optional<node::Statmt*> parse_statmt() {
-            if (peek().has_value() && peek().value().tipo == TipoToken::_exit) {
+            if (peek().has_value() && peek().value().tipo == TipoToken::_exit) { // função de saída do programa
                 consume();
                 auto statmt_exit = m_alloc.alloc<node::StatmtExit>();
                 try_consume(TipoToken::parenteses_abre, "Erro de sintaxe. A função deve conter '('.");
@@ -315,7 +284,7 @@ class Parser {
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_exit;
                 return statmt;
-            } else if (peek().has_value() && peek().value().tipo == TipoToken::var) {
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::var) { // declaração de nova variável
                 consume();
                 auto statmt_var = m_alloc.alloc<node::StatmtVar>();
                 auto new_var = m_alloc.alloc<node::NewVar>();
@@ -337,7 +306,7 @@ class Parser {
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_var;
                 return statmt;
-            } else if (peek().has_value() && peek().value().tipo == TipoToken::identif) {
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::identif) { // realocação de variável
                 auto statmt_var = m_alloc.alloc<node::StatmtVar>();
                 auto reass_var = m_alloc.alloc<node::ReassVar>();
                 reass_var->token_identif = consume();
@@ -353,7 +322,7 @@ class Parser {
                 auto statmt = m_alloc.alloc<node::Statmt>();
                 statmt->variant_statmt = statmt_var;
                 return statmt;
-            } else if (peek().has_value() && peek().value().tipo == TipoToken::chaves_abre) {
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::chaves_abre) { // inicialização de novo escopo
                 if (auto scope = parse_scope()) {
                     auto statmt = m_alloc.alloc<node::Statmt>();
                     statmt->variant_statmt = scope.value();
@@ -362,7 +331,7 @@ class Parser {
                     std::cerr << "Escopo inválido.";
                     exit(EXIT_FAILURE);
                 }
-            } else if (peek().has_value() && peek().value().tipo == TipoToken::_if) {
+            } else if (peek().has_value() && peek().value().tipo == TipoToken::_if) { // início do if
                 consume();
                 try_consume(TipoToken::parenteses_abre, "Esperava-se '(' após expressão 'if'.");
                 auto statmt_if = m_alloc.alloc<node::StatmtIf>();

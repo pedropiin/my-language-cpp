@@ -35,6 +35,7 @@ class Generator {
                 Generator& generator;
                 void operator()(const node::TermIntLit* term_int_lit) {
                     generator.m_out << "    mov rax, " << term_int_lit->token_int.valor.value() << '\n';
+                    std::cout << "esta aqui para o valor: " << term_int_lit->token_int.valor.value() << '\n';
                     generator.push("rax");
                 }
                 void operator()(const node::TermIdentif* term_identif) {
@@ -111,52 +112,6 @@ class Generator {
         RETURNS:
         */
         inline void generate_bin_expr(const node::BinExpr* bin_expr) {
-            // struct BinExprVisitor {
-            //     Generator& generator;
-            //     void operator()(const node::BinExprSoma* soma) {
-            //         generator.generate_expr(soma->lado_esquerdo);
-            //         generator.generate_expr(soma->lado_direito);
-            //         generator.pop("rax");
-            //         generator.pop("rbx");
-            //         generator.m_out << "    add rax, rbx\n";
-            //         generator.push("rax");
-            //     }
-            //     void operator()(const node::BinExprSub* subtracao)
-            //     {
-            //         generator.generate_expr(subtracao->lado_esquerdo);
-            //         generator.generate_expr(subtracao->lado_direito);
-            //         generator.pop("rax");
-            //         generator.pop("rbx");
-            //         generator.m_out << "    sub rbx, rax\n";
-            //         generator.push("rbx");
-            //     }
-            //     void operator()(const node::BinExprMulti* multiplicacao) {
-            //         generator.generate_expr(multiplicacao->lado_esquerdo);
-            //         generator.generate_expr(multiplicacao->lado_direito);
-            //         generator.pop("rax");
-            //         generator.pop("rbx");
-            //         generator.m_out << "    mul rbx\n";
-            //         generator.push("rax");
-            //     }
-            //     void operator()(const node::BinExprDiv* divisao) {
-            //         generator.generate_expr(divisao->lado_esquerdo);
-            //         generator.generate_expr(divisao->lado_direito);
-            //         generator.pop("rbx"); 
-            //         generator.pop("rax"); 
-            //         generator.m_out << "    div rbx\n";
-            //         generator.push("rax");
-            //     }
-            //     void operator()(const node::BinExprComp* comp) {
-            //         generator.generate_expr(comp->lado_esquerdo);
-            //         generator.generate_expr(comp->lado_direito);
-            //         generator.pop("rbx");
-            //         generator.pop("rax");
-            //         generator.m_out << "    cmp rbx, rax\n";
-            //     }
-            // };
-
-            // BinExprVisitor visitor {.generator = *this};
-            // std::visit(visitor, bin_expr->variant_bin_expr);
             switch (bin_expr->token.tipo) {
                 case TipoToken::mais:
                     generate_expr(bin_expr->lado_esquerdo);
@@ -269,14 +224,32 @@ class Generator {
                                     }
                                 }
                                 if (contem == 1) {
+                                    // !!!!!!!!!
+                                    /*
+                                    O problema está aqui:
+                                    na hora que eu encontro uma expressão de reassignment, eu estou gerando o código do valor
+                                    que a variável vai receber e depois eu mexo o ponteiro da stack. Nâo é assim que deve ser feito.
+                                    Eu primeiro preciso mover o ponteiro da stack para a posição na stack da variável que vai
+                                    receber o reassignment, pra depois dar push no valor em si. Depois mexo novamente o ponteiro para
+                                    a base da stack.
+                                    O problema é: como vou fazer isso sem afetar a geração de código de, por exemplo, expressões binárias?
+                                    Por que isso foi generalizado para ser feito na função de geração de termos, sendo um termo um inteiro
+                                    ou um identificador. Então toda vez que eu encontrar um identificador, vou para essa função, não
+                                    necessariamente sendo um reassignment.
+                                    */
+                                    
+
+                                    auto &var = generator.m_scopes.at(i_og_scope).at(reass_var->token_identif.valor.value());
+                                    // std::stringstream offset;
+                                    // std::cout << "ESTOU NO NOVO QWORD" << std::endl;
+                                    std::cout << "stack_size: " << generator.m_stack_size << " var: " << reass_var->token_identif.valor.value() << " pos na stack: " << var.stack_pos << std::endl;
+                                    // offset << "QWORD [rsp + " << (generator.m_stack_size - var.stack_pos) * 8 << "]"; // stack e registrador %rsp crescem pra baixo.
+                                    // generator.push(offset.str());
+                                    
+                                    generator.m_out << "    add rsp, " << (generator.m_stack_size - var.stack_pos) * 8 << '\n';
                                     generator.generate_expr(reass_var->expr);
-                                    Variable var_substitu = {.stack_pos = generator.m_stack_size - 1};
-                                    generator.m_scopes.at(i_og_scope)[reass_var->token_identif.valor.value()] = var_substitu;
-                                    // if (i_og_scope == generator.num_scopes - 1) { // Variável foi criada no escopo atual
-                                    //     generator.m_scopes.back()[reass_var->token_identif.valor.value()] = var_substitu;
-                                    // } else { // Variável foi criada em um escopo anterior
-                                    //     generator.m_scopes.back().insert({reass_var->token_identif.valor.value(), var_substitu});
-                                    // }
+
+                                    // TESTAR CHAMAR QWORD AQUI
                                 } else {
                                     std::cerr << "Identificador '" << reass_var->token_identif.valor.value() << "' não inicializado." << std::endl;
                                     exit(EXIT_FAILURE);
